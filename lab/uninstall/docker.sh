@@ -1,12 +1,23 @@
 #!/bin/sh
 
-# Uninstall docker
-sudo apt-get remove -y docker-ce docker-ce-cli containerd.io
-sudo rm /etc/apt/keyrings/docker.gpg
+# Stop and remove docker socket
+sudo systemctl stop docker.socket
+sudo rm -rf /var/run/docker.sock
 
-# Remove user from docker group and remove the group
-sudo deluser $USER docker
-sudo delgroup docker
+# Uninstall docker
+sudo apt-get purge -y docker-ce docker-ce-cli containerd.io
+sudo apt-get autoremove -y
+sudo rm -rf /var/lib/docker
+sudo rm -rf /var/lib/containerd
+sudo rm -rf /etc/docker
+sudo rm -rf /var/run/docker
+
+# Delete docker repository
+sudo rm -rf /etc/apt/keyrings/docker.gpg
+sudo rm -rf /etc/apt/sources.list.d/docker.list
+
+# Delete bridge
+sudo ip link delete docker0
 
 # Reset iptables
 sudo iptables -F
@@ -16,3 +27,9 @@ sudo iptables -X
 sudo iptables -P INPUT ACCEPT
 sudo iptables -P FORWARD ACCEPT
 sudo iptables -P OUTPUT ACCEPT
+
+# Remove user from docker group
+sudo deluser $USER docker
+
+# Delete docker group
+sudo delgroup docker

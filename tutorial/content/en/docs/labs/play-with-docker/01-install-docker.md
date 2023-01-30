@@ -13,21 +13,27 @@ weight: 210
 
 Open the terminal and run the following commands listed below.
 
-1. Change directory to the previously cloned repository directory:
+1. Change directory to the cloned repository directory:
 
     ```sh
-    cd ~/kubernetes-starter-pack/install
+    cd ~/k8slab
     ```
 
-2. Launch the installation script which will follow the [repository installation method](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
+2. Give the execution permission to the installation script:
+
+  ```sh
+  sudo chmod +x lab/install/docker.sh
+  ```
+
+3. Launch the installation script which will follow the [repository installation method](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
 
     ```sh
-    ./docker-install.sh
+    ./lab/install/docker.sh
     ```
 
 {{< alert icon="💡" text="Log out and log back in so that your group membership is re-evaluated." />}}
 
-3. Verify that you can interact with the Docker Engine:
+4. Verify that you can interact with the Docker Engine:
 
     ```sh
     docker ps
@@ -39,7 +45,7 @@ Open the terminal and run the following commands listed below.
 ip addr show
 ```
 
-You should see a newly `docker0` interface with ip address `172.17.0.1` created by Docker. This is the virtual bridge used to forward data traffic to containers attached to it.
+You should see a newly `docker0` interface with ip address `172.17.0.1/16` created by Docker. This is the virtual bridge used to forward data traffic to containers attached to it.
 
 ## Explore network routes
 

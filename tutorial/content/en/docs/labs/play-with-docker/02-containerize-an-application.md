@@ -12,13 +12,18 @@ weight: 220
 
 Open the terminal and run the following commands listed below.
 
-1. Clone the app repository and change the directory to the `app` directory:
+1. Change the direcotry to the home direcotry:
+    ```sh
+    cd
+    ```
+
+2. Clone the app repository and change the directory to the `app` directory:
 
     ```sh
     git clone https://github.com/docker/getting-started.git && cd getting-started/app
     ```
 
-2. Create a file named `Dockerfile` with some content used to create the image:
+3. Create a file named `Dockerfile` with some content used to create the image:
 
     ```sh
     cat <<EOF | tee Dockerfile
@@ -43,7 +48,7 @@ Open the terminal and run the following commands listed below.
     
     * The [`EXPOSE`](https://docs.docker.com/engine/reference/builder/#expose) instruction informs Docker that the container listens on the specified network ports at runtime. __The `EXPOSE` instruction does not actually publish the port__. It functions as a type of documentation between the person who builds the image and the person who runs the container, about which ports are intended to be published.
 
-3. Build the container image named `getting-started` starting from the current directory:
+4. Build the container image named `getting-started` starting from the current directory:
 
     ```sh
     docker build -t getting-started .

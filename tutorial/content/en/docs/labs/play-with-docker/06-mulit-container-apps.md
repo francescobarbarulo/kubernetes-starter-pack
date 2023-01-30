@@ -97,7 +97,7 @@ Let's connect the todo app to MySQL
       -e MYSQL_USER=root \
       -e MYSQL_PASSWORD=secret \
       -e MYSQL_DB=todos \
-      getting-started
+      localhost:5000/getting-started
     ```
 
 {{< alert context="info" >}}

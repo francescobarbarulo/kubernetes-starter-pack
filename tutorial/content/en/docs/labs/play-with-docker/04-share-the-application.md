@@ -12,7 +12,12 @@ weight: 240
 
 Docker provides a containerized local registry that can be started using the `docker run` command. You will also configure the registry server by providing native basic authentication.
 
-1. Create a password file with one entry for the user `testuser`, with password `testpassword`:
+1. Change the direcotry to the home direcotry:
+    ```sh
+    cd
+    ```
+
+2. Create a password file with one entry for the user `testuser`, with password `testpassword`:
     ```sh
     mkdir auth
     docker run \
@@ -20,7 +25,7 @@ Docker provides a containerized local registry that can be started using the `do
     httpd:2 -Bbn testuser testpassword > auth/htpasswd
     ```
 
-2. Start the registry with basic authentication:
+3. Start the registry with basic authentication:
     ```sh
     docker run -d \
     -p 5000:5000 \
@@ -32,7 +37,7 @@ Docker provides a containerized local registry that can be started using the `do
     registry:2
     ```
 
-3. After a few seconds, open your web browser at [`http://localhost:5000/v2/_catalog`](http://localhost:5000/v2/_catalog). You should see an empty json response `{}`.
+4. After a few seconds, open your web browser at [`http://localhost:5000/v2/_catalog`](http://localhost:5000/v2/_catalog). Use the above credentials when requested. You should see an empty json response `{"repositories":[]}`.
 
 ## Push the image
 

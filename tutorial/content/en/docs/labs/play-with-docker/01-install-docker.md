@@ -21,9 +21,9 @@ Open the terminal and run the following commands listed below.
 
 2. Give the execution permission to the installation script:
 
-  ```sh
-  sudo chmod +x lab/install/docker.sh
-  ```
+    ```sh
+    sudo chmod +x lab/install/docker.sh
+    ```
 
 3. Launch the installation script which will follow the [repository installation method](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
 

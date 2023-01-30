@@ -30,14 +30,14 @@ Open the terminal and run the following commands listed below.
     docker run -d -p 8080:3000 getting-started
     ```
 
-You probably saw an error like this (the IDs will be different):
+    You probably saw an error like this (the IDs will be different):
 
 ```plaintext
 docker: Error response from daemon: driver failed programming external connectivity on endpoint laughing_burnell 
 (bb242b2ca4d67eba76e79474fb36bb5125708ebdabd7f45c8eaf16caaabde9dd): Bind for 0.0.0.0:3000 failed: port is already allocated.
 ```
 
-The error occurred because you aren’t able to start the new container while your old container is still running. The reason is that the old container is already using the host’s port 8080 and only one process on the machine (containers included) can listen to a specific port. To fix this, you need to remove the old container.
+The error occurred because you aren’t able to start the new container while your old container is still running. The reason is that the old container is already using the host’s port `8080` and only one process on the machine (containers included) can listen to a specific port. To fix this, you need to remove the old container.
 
 ## Remove the old container
 
@@ -55,11 +55,15 @@ To remove a container, you first need to stop it. Once it has stopped, you can r
     docker stop <the-container-id>
     ```
 
-3. Once the container is stopped, you can remove it by using the `docker rm` command.
+3. You can show the stopped container by typing `docker ps -a`. You should see two stopped containers, the one stopped at step 2 and the one exited because of the port binding error.
+
+4. Once the container is stopped, you can remove it by using the `docker rm` command.
 
     ```sh
     docker rm <the-container-id>
     ```
+
+    Remove both the stopped containers.
 
 {{< alert context="info">}}
 You can stop and remove a container in a single command by adding the `force` flag to the `docker rm` command.

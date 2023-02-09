@@ -71,6 +71,8 @@ Docker provides a containerized local registry that can be started using the `do
     docker push localhost:5000/getting-started
     ```
 
+5. Check the image is present on the registry by refreshing the web browser at [`http://localhost:5000/v2/_catalog`](http://localhost:5000/v2/_catalog). You should see a json response like this: `{"repositories":["getting-started"]}`. 
+
 ## Run the image pulled from the local registry
 
 Now that you pushed the image on the registry, you can safely remove the image from your machine. This to also reproduce a new instance on which you deploy your containerized application.

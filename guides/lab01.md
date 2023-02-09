@@ -167,9 +167,28 @@ To remove a container, you first need to stop it. Once it has stopped, you can r
     docker rm <the-container-id>
     ```
 
-    Remove both the stopped containers.
+    **Remove both the stopped containers**.
 
-    > 💡 You can stop and remove a container in a single command by adding the `force` flag to the `docker rm` command. For example: `docker rm -f <the-containr-id>`.
+    > 💡 You can stop and remove a container in a single command by adding the `force` flag to the `docker rm` command. For example: `docker rm -f <the-container-id>`.
+
+5. You removed the old container, but the image from which it was originated is still present on the machine. List all the images. 
+
+    ```sh
+    docker images
+    ```
+
+    You should see the old image of your app represented by the `<none>` placeholder.
+
+    ```plaintext
+    REPOSITORY        TAG       IMAGE ID       CREATED          SIZE
+    <none>            <none>    c3de9545b495   30 minutes ago   262MB
+    ```
+
+6. Take note of the image ID and remove it.
+
+    ```sh
+    docker rmi <the-image-id>
+    ```
 
 ## Start the updated app container
 

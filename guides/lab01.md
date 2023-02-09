@@ -25,7 +25,7 @@ Open the terminal and run the following commands listed below.
     ./scripts/docker-install.sh
     ```
 
-    > 💡 Log out and log back in so that your group membership is re-evaluated
+    > ⚠️ Log out and log back in so that your group membership is re-evaluated
 
 4. Verify that you can interact with the Docker Engine:
 
@@ -169,7 +169,7 @@ To remove a container, you first need to stop it. Once it has stopped, you can r
 
     Remove both the stopped containers.
 
-    > You can stop and remove a container in a single command by adding the `force` flag to the `docker rm` command. For example: `docker rm -f <the-containr-id>`.
+    > 💡 You can stop and remove a container in a single command by adding the `force` flag to the `docker rm` command. For example: `docker rm -f <the-containr-id>`.
 
 ## Start the updated app container
 
@@ -180,3 +180,7 @@ To remove a container, you first need to stop it. Once it has stopped, you can r
     ```
 
 2. Refresh your browser on `http://localhost:8080` and you should see your updated help text.
+
+## Next
+
+[Lab 02](./lab02.md)

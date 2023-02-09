@@ -281,3 +281,5 @@ To clean up your host from docker run:
 ```sh
 ./scripts/docker-uninstall.md
 ```
+
+> ⚠️ Log out and log back in so that your group membership is re-evaluated

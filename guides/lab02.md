@@ -104,11 +104,7 @@ Now that you pushed the image on the registry, you can safely remove the image f
 
     You should see the image get pulled down and eventually start up!
 
-5. Reopen your web browser to [`http://localhost:8080`](http://localhost:8080) and check if it works. Then remove it.
-
-    ```sh
-    docker rm -f <the-container-id>
-    ```
+5. Reopen your web browser to [`http://localhost:8080`](http://localhost:8080) and check if it works.
 
 ## Persist the todo data
 

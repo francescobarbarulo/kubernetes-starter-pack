@@ -6,28 +6,15 @@ Open the terminal and run the following commands listed below.
 
 ## Install Docker Engine
 
-
-1. Clone this repo on your local machine and change directory to it:
-
-    ```sh
-    git clone https://github.com/francescobarbarulo/kubernetes-starter-pack && cd kubernetes-starter-pack
-    ```
-
-2. Give the execution permission to all the scripts:
+1. Launch the installation script which will follow the [repository installation method](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
 
     ```sh
-    sudo chmod +x scripts/*
-    ```
-
-3. Launch the installation script which will follow the [repository installation method](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
-
-    ```sh
-    ./scripts/docker-install.sh
+    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/docker-install.sh | sh
     ```
 
     > ⚠️ Log out and log back in so that your group membership is re-evaluated
 
-4. Verify that you can interact with the Docker Engine:
+2. Verify that you can interact with the Docker Engine:
 
     ```sh
     docker ps

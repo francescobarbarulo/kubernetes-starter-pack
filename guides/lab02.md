@@ -10,20 +10,16 @@ Open the terminal and run the following commands listed below.
 
 Docker provides a containerized local registry that can be started using the `docker run` command. You will also configure the registry server by providing native basic authentication.
 
-1. Change the direcotry to the home direcotry:
+1. Create a password file with one entry for the user `testuser`, with password `testpassword`:
     ```sh
     cd
-    ```
-
-2. Create a password file with one entry for the user `testuser`, with password `testpassword`:
-    ```sh
     mkdir auth
     docker run \
     --entrypoint htpasswd \
     httpd:2 -Bbn testuser testpassword > auth/htpasswd
     ```
 
-3. Start the registry with basic authentication:
+2. Start the registry with basic authentication:
     ```sh
     docker run -d \
     -p 5000:5000 \
@@ -35,7 +31,7 @@ Docker provides a containerized local registry that can be started using the `do
     registry:2
     ```
 
-4. After a few seconds, open your web browser at [`http://localhost:5000/v2/_catalog`](http://localhost:5000/v2/_catalog). Use the above credentials when requested. You should see an empty json response `{"repositories":[]}`.
+3. After a few seconds, open your web browser at [`http://localhost:5000/v2/_catalog`](http://localhost:5000/v2/_catalog). Use the above credentials when requested. You should see an empty json response `{"repositories":[]}`.
 
 ## Push the image
 
@@ -281,8 +277,7 @@ Let's connect the todo app to MySQL.
 To clean up your host uninstall docker by running:
 
 ```sh
-cd ~/kubernetes-starter-pack
-./scripts/docker-uninstall.md
+curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/docker-uninstall.sh | sh
 ```
 
 > ⚠️ Log out and log back in so that your group membership is re-evaluated

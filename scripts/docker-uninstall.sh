@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# Stop and remove running containers
+docker rm -f $(docker ps -aq)
+docker volume ls | awk 'NR>1 {print $2}' | xargs -n 1 docker volume rm
+docker network ls | awk 'NR>4 {print $1}' | xargs -n 1 docker network rm
+docker images | awk 'NR>1 {print $3}' | xargs -n 1 docker rmi
+
+# Stop the docker.service
+sudo systemctl stop docker.service
+
 # Stop and remove docker socket
 sudo systemctl stop docker.socket
 sudo rm -rf /var/run/docker.sock

@@ -278,9 +278,10 @@ Let's connect the todo app to MySQL.
 
 ## Clean up
 
-To clean up your host from docker run:
+To clean up your host uninstall docker by running:
 
 ```sh
+cd ~/kubernetes-starter-pack
 ./scripts/docker-uninstall.md
 ```
 

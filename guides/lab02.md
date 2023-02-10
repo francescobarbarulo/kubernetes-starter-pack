@@ -281,3 +281,8 @@ curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter
 ```
 
 > ⚠️ Log out and log back in so that your group membership is re-evaluated
+
+
+# Next
+
+[Lab 03](./lab03.md)

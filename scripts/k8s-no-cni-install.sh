@@ -76,7 +76,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 
 # Init control-plane
-cat <<EOF | sudo tee ~/kubeadm-config.yaml > /dev/null
+cat <<EOF | tee ~/kubeadm-config.yaml > /dev/null
 kind: InitConfiguration
 apiVersion: kubeadm.k8s.io/v1beta3
 nodeRegistration:
@@ -100,9 +100,9 @@ EOF
 sudo kubeadm init --config ~/kubeadm-config.yaml
 
 # Copy the admin config file to the default kubectl directory
-if [ ! -d ~/.kube ]; then mkdir ~/.kube; fi
-sudo cp /etc/kubernetes/admin.conf ~/.kube/config
-sudo chown $USER:$USER ~/.kube/config
+# if [ ! -d ~/.kube ]; then mkdir ~/.kube; fi
+# sudo cp /etc/kubernetes/admin.conf ~/.kube/config
+# sudo chown $USER:$USER ~/.kube/config
 
 # kubectl auto-completion
 kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null

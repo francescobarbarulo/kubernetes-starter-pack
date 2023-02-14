@@ -243,13 +243,42 @@ Now that we have multiple replicas of the application we need a way to load bala
 
 Often front-end microservices need to be reached from the outside world. The very basic solution is to use a `NodePort` service.
 
-1. Let's update the `kubernetes-bootcamp` service making it of type `NodePort`.
+1. Delete the ClusterIP service we previously created.
 
     ```sh
-    kubectl patch service kubernetes-bootcamp -p '{"spec": {"type": "NodePort"}}'
+    kubectl delete service kubernetes-bootcamp
     ```
 
-2. List the services:
+2. In the next step we are going to create a service yaml definition where we need to refer to the set of target Pods based on labels using the selector. Show Pods with their labels.
+
+    ```sh
+    kubectl get pod --show-labels -o wide
+    ```
+
+    When we created the deployment, Kubernetes labeled the Pods for us whit the label `app=kubernetes-bootcamp`.
+    
+
+3. Create a new `NodePort` service from a YAML manifest selecting the target Pods using the label `app=kubernetes-bootcamp`.
+
+    ```sh
+    cat <<EOF | tee service.yaml > /dev/null
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: kubernetes-bootcamp
+    spec:
+      type: NodePort
+      selector:
+        app: kubernetes-bootcamp
+      ports:
+      - name: http
+        port: 80
+        targetPort: 8080
+    EOF
+    kubectl apply -f service.yaml
+    ```
+
+4. List the services:
 
     ```sh
     kubectl get services
@@ -259,21 +288,22 @@ Often front-end microservices need to be reached from the outside world. The ver
 
     ```plaintext
     NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-    kubernetes            ClusterIP   10.96.0.1      <none>        443/TCP        3d5h
-    kubernetes-bootcamp   NodePort    10.96.138.36   <none>        80:31203/TCP   2d23h
+    kubernetes            ClusterIP   10.96.0.1      <none>        443/TCP        5h
+    kubernetes-bootcamp   NodePort    10.96.138.36   <none>        80:31203/TCP   13s
     ```
 
     The `kubernetes-bootcamp` service is now of type `NodePort` and the assigned port is `31203`.
     
     **Note**: The port number may differ from yours. 
 
-3. Let's take note of it:
+5. Take note of the exposed port and verify the endpoints include the IP addresses of the Pods listed at step 2.
 
     ```sh
     export NODE_PORT=$(kubectl get services/kubernetes-bootcamp -o go-template='{{(index .spec.ports 0).nodePort}}')
+    kubectl describe service kubernetes-bootcamp -o long | grep Endpoints
     ```
 
-4. Use curl to make an HTTP request, this time from outside the cluster using the IP address and port of the host.
+6. Use curl to make an HTTP request, this time from outside the cluster using the IP address and port of the host.
 
     ```sh
     export HOST_IP=$(hostname -I)

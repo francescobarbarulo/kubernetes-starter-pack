@@ -100,7 +100,7 @@ EOF
 sudo kubeadm init --config ~/kubeadm-config.yaml
 
 # Copy the admin config file to the default kubectl directory
-# if [ ! -d ~/.kube ]; then mkdir ~/.kube; fi
+if [ ! -d ~/.kube ]; then mkdir ~/.kube; fi
 # sudo cp /etc/kubernetes/admin.conf ~/.kube/config
 # sudo chown $USER:$USER ~/.kube/config
 

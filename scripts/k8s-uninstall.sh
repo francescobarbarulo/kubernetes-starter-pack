@@ -20,5 +20,6 @@ sudo systemctl daemon-reload
 
 # Remove kubeadm, kubelet, kubectl
 sudo apt-get purge kubeadm kubelet kubectl -y --allow-change-held-packages
+mkdir .kube
 
 sudo apt-get autoremove -y

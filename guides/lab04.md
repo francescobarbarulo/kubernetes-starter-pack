@@ -50,7 +50,7 @@ In this lab you are going to install the Cilium CNI plugin and explore the Kuber
     kubectl get deployments
     ```
 
-    The Pod seems not to come up. Let's invenstigate more.
+    You should see `0/1` in the `READY` column. It represents the ratio of `CURRENT/DESIRED` replicas. This means that the pod seems not to come up. Let's invenstigate more.
 
 3. List Pods and take note of the `kubernetes-bootcamp` pod name.
 
@@ -169,10 +169,39 @@ In this lab you are going to install the Cilium CNI plugin and explore the Kuber
     exit
     ```
 
-## Load balancing requests among replicas
+## Scaling the deployment
 
-We previously took note of the Pod IP to connect to. If the Pod gets recreated it will change IP address and we should update this information in all microservices that connect to it.
-Furthermore we need a mechanism to load balance requests to multiple replicas.
+In order to facilitate more load, we may need to scale up the number of replicas for a microservice.
+
+1. Scale the deployment by running:
+
+    ```sh
+    kubectl scale deployments/kubernetes-bootcamp --replicas=4
+    ```
+
+2. Show the deployments to verify the current number of replicas matches the desired one.
+
+    ```sh
+    kubectl get deployments
+    ```
+
+    You should see `4/4` in the `READY` column. If not, run again the command above.
+
+3. The change was applied, and we have 4 instances of the application available. Next, let’s check if the number of Pods changed:
+
+    ```sh
+    kubectl get pods -o wide
+    ```
+
+4. There are 4 Pods now, with different IP addresses. The change was registered in the Deployment events log. To check that, use the describe command:
+
+    ```sh
+    kubectl describe deployments/kubernetes-bootcamp
+    ```
+
+## Load balancing
+
+Now that we have multiple replicas of the application we need a way to load balance requests among them.
 
 **Services** allow us to hide the ephimeral nature of Pods and to implement a random load balancing mechanism using a fixed front-end IP address and an associated domain name internally resolvable.
 
@@ -190,13 +219,7 @@ Furthermore we need a mechanism to load balance requests to multiple replicas.
 
     **Note**: The service has received a unique ClusterIP and an entry in the cluster DNS has been created.
 
-3. Let's increase the deployment replicas to `2`.
-
-    ```sh
-    kubectl patch deployments kubernetes-bootcamp -p '{"spec": {"replicas": 2}}' 
-    ```
-
-3. Execute a shell in the `client` pod.
+3. Open a shell session in the `client` pod.
 
     ```sh
     kubectl exec -it client -- sh
@@ -208,9 +231,9 @@ Furthermore we need a mechanism to load balance requests to multiple replicas.
     wget -qO - http://kubernetes-bootcamp
     ```
 
-    > 💡 Run the above command multiple times to see how requests are load balanced among the two replicas.
+    > 💡 Run the above command multiple times to see how requests are load balanced among the four replicas.
 
-5. Close the connection to the client Pod.
+5. Close the session to the client Pod.
 
     ```sh
     exit
@@ -223,7 +246,7 @@ Often front-end microservices need to be reached from the outside world. The ver
 1. Let's update the `kubernetes-bootcamp` service making it of type `NodePort`.
 
     ```sh
-    kubectl expose deployment kubernetes-bootcamp --port 80 --target-port 8080 --type="NodePort"
+    kubectl patch service kubernetes-bootcamp -p '{"spec": {"type": "NodePort"}}'
     ```
 
 2. List the services:
@@ -240,16 +263,21 @@ Often front-end microservices need to be reached from the outside world. The ver
     kubernetes-bootcamp   NodePort    10.96.138.36   <none>        80:31203/TCP   2d23h
     ```
 
-    The Node port assigned is `31203`, which may differ from yours.
+    The `kubernetes-bootcamp` service is now of type `NodePort` and the assigned port is `31203`.
+    
+    **Note**: The port number may differ from yours. 
 
-3. Let's take note of the port number:
+3. Let's take note of it:
 
     ```sh
     export NODE_PORT=$(kubectl get services/kubernetes-bootcamp -o go-template='{{(index .spec.ports 0).nodePort}}')
     ```
 
-4. Use curl to make an HTTP request, this time from outside the cluster using the host IP address and port.
+4. Use curl to make an HTTP request, this time from outside the cluster using the IP address and port of the host.
 
     ```sh
+    export HOST_IP=$(hostname -I)
     curl http://$IP:$NODE_PORT
     ```
+
+    Hooray! The application is now reachable from the world.

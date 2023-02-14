@@ -1,6 +1,6 @@
 # Lab 03
 
-In this lab you are going to install Kubernetes as all-in-one single-node deployment.
+In this lab you are going to install Kubernetes as all-in-one single-node deployment and access it.
 
 Open the terminal and run the following commands listed below.
 
@@ -32,7 +32,7 @@ Open the terminal and run the following commands listed below.
 
 ## Create the kubeconfig file
 
-1. Before creating a kubeconfig file we need a client certificate signed by Kubernetes CA to let Kubernetes authenticate us. Generate admin keys:
+1. Before creating a kubeconfig file you need a client certificate signed by Kubernetes CA to let Kubernetes authenticate us. Generate admin keys:
 
     ```sh
     openssl genrsa -out admin.key 2048
@@ -107,7 +107,7 @@ Open the terminal and run the following commands listed below.
     You should now deploy a pod network to the cluster
     ```
 
-    In the next lab we are going to solve this issue.
+    In the next lab you are going to solve this issue.
 
 ## Next
 

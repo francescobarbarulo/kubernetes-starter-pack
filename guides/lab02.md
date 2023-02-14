@@ -107,13 +107,13 @@ Now that you pushed the image on the registry, you can safely remove the image f
 When a container runs, it uses the various layers from an image for its filesystem. Each container also gets its own "scratch space" to create/update/remove files. Any changes won’t be seen in another container, _even if_ they are using the same image.
 Moreover, those changes are lost when the container is removed.
 
-Volumes provide the ability to connect specific filesystem paths of the container back to the host machine. If a directory in the container is mounted, changes in that directory are also seen on the host machine. If we mount that same directory across container restarts, we’d see the same files.
+Volumes provide the ability to connect specific filesystem paths of the container back to the host machine. If a directory in the container is mounted, changes in that directory are also seen on the host machine. If you mount that same directory across container restarts, you’d see the same files.
 
-By default, the todo app stores its data in a SQLite Database at `/etc/todos/todo.db` in the container’s filesystem. If you’re not familiar with SQLite, no worries! It’s simply a relational database in which all of the data is stored in a single file. While this isn’t the best for large-scale applications, it works for small demos. We’ll talk about switching this to a different database engine later.
+By default, the todo app stores its data in a SQLite Database at `/etc/todos/todo.db` in the container’s filesystem. If you’re not familiar with SQLite, no worries! It’s simply a relational database in which all of the data is stored in a single file. While this isn’t the best for large-scale applications, it works for small demos. You’ll talk about switching this to a different database engine later.
 
-With the database being a single file, if we can persist that file on the host and make it available to the next container, it should be able to pick up where the last one left off. By creating a volume and attaching (often called "mounting") it to the directory the data is stored in, we can persist the data. As our container writes to the `todo.db` file, it will be persisted to the host in the volume.
+With the database being a single file, if you can persist that file on the host and make it available to the next container, it should be able to pick up where the last one left off. By creating a volume and attaching (often called "mounting") it to the directory the data is stored in, you can persist the data. As our container writes to the `todo.db` file, it will be persisted to the host in the volume.
 
-As mentioned, we are going to use a named volume. Think of a named volume as simply a bucket of data. Docker maintains the physical location on the disk and you only need to remember the name of the volume. Every time you use the volume, Docker will make sure the correct data is provided.
+As mentioned, you are going to use a named volume. Think of a named volume as simply a bucket of data. Docker maintains the physical location on the disk and you only need to remember the name of the volume. Every time you use the volume, Docker will make sure the correct data is provided.
 
 1. Create a volume by using the docker volume create command.
 
@@ -123,7 +123,7 @@ As mentioned, we are going to use a named volume. Think of a named volume as sim
 
 2. Stop and remove the todo app container once again with `docker rm -f <id>`, as it is still running without using the persistent volume.
 
-3. Start the todo app container, but add the `-v` flag to specify a volume mount. We will use the named volume and mount it to `/etc/todos`, which will capture all files created at the path.
+3. Start the todo app container, but add the `-v` flag to specify a volume mount. You will use the named volume and mount it to `/etc/todos`, which will capture all files created at the path.
 
     ```sh
     docker run -d -p 8080:3000 -v todo-db:/etc/todos localhost:5000/getting-started
@@ -153,13 +153,13 @@ The `Mountpoint` is the actual location on the disk where the data is stored. No
 
 ## Container Networking
 
-Remember that containers, by default, run in isolation and don’t know anything about other processes or containers on the same machine. So, how do we allow one container to talk to another? The answer is networking. Now, you don’t have to be a network engineer (hooray!). Simply remember this rule...
+Remember that containers, by default, run in isolation and don’t know anything about other processes or containers on the same machine. So, how do you allow one container to talk to another? The answer is networking. Now, you don’t have to be a network engineer (hooray!). Simply remember this rule...
 
 > If two containers are on the same network, they can talk to each other. If they aren't, they can't.
 
 ## Start MySQL
 
-There are two ways to put a container on a network: (i) Assign it at start or (ii) connect an existing container. For now, we will create the network first and attach the MySQL container at startup.
+There are two ways to put a container on a network: (i) Assign it at start or (ii) connect an existing container. For now, you will create the network first and attach the MySQL container at startup.
 
 1. Create the network.
     
@@ -167,7 +167,7 @@ There are two ways to put a container on a network: (i) Assign it at start or (i
     docker network create todo-app
     ```
 
-2. Start a MySQL container and attach it to the network. We're also going to define a few environment variables that the database will use to initialize the database (see the "Environment Variables" section in the MySQL Docker Hub listing).
+2. Start a MySQL container and attach it to the network. You're also going to define a few environment variables that the database will use to initialize the database (see the "Environment Variables" section in the MySQL Docker Hub listing).
 
     ```sh
     docker run -d \
@@ -178,12 +178,12 @@ There are two ways to put a container on a network: (i) Assign it at start or (i
       mysql:8.0
     ```
 
-    You'll also see we specified the `--network-alias` flag. We'll come back to that in just a moment.
+    You'll also see you specified the `--network-alias` flag. You'll come back to that in just a moment.
 
-    > You'll notice we're using a volume named `todo-mysql-data` here and mounting it at `/var/lib/mysql`, which is where MySQL stores its data. However, we never ran a docker volume create command. Docker recognizes we want to use a named volume and creates one automatically for us.
+    > You'll notice you're using a volume named `todo-mysql-data` here and mounting it at `/var/lib/mysql`, which is where MySQL stores its data. However, you never ran a docker volume create command. Docker recognizes you want to use a named volume and creates one automatically for us.
 
 
-3. To confirm we have the database up and running, connect to the database and verify it connects.
+3. To confirm you have the database up and running, connect to the database and verify it connects.
 
     ```sh
     docker exec -it <mysql-container-id> mysql -u root -p
@@ -216,7 +216,7 @@ There are two ways to put a container on a network: (i) Assign it at start or (i
     exit
     ```
 
-    Hooray! We have our todos database and it’s ready for us to use!
+    Hooray! You have our todos database and it’s ready for us to use!
 
 ## Run your app with MySQL
 
@@ -229,7 +229,7 @@ The todo app supports the setting of a few environment variables to specify MySQ
 
 Let's connect the todo app to MySQL.
 
-1. We'll specify each of the environment variables above, as well as connect the container to our app network.
+1. You'll specify each of the environment variables above, as well as connect the container to our app network.
 
     ```sh
     docker run -d -p 8080:3000 \
@@ -241,9 +241,9 @@ Let's connect the todo app to MySQL.
       localhost:5000/getting-started
     ```
 
-    > You'll notice we're using the value `mysql` as `MYSQL_HOST`. While `mysql` isn't normally a valid hostname, Docker is able to resolve it to the IP address of the mysql container thanks to the `--network-alias` flag.
+    > You'll notice you're using the value `mysql` as `MYSQL_HOST`. While `mysql` isn't normally a valid hostname, Docker is able to resolve it to the IP address of the mysql container thanks to the `--network-alias` flag.
 
-2. If we look at the logs for the container (`docker logs -f <container-id>`), we should see a message indicating it's using the mysql database.
+2. If you look at the logs for the container (`docker logs -f <container-id>`), you should see a message indicating it's using the mysql database.
 
     ```plaintext
     Connected to mysql db at host mysql

@@ -1,6 +1,8 @@
 # Lab 04
 
-In this lab you are going to install the Cilium CNI plugin and explore the Kubernetes core concepts.
+In this lab you are going to install the Cilium CNI plugin and create, scale und update a Deployment.
+
+Open the terminal and run the following commands listed below.
 
 ## Install a CNI plugin
 
@@ -25,22 +27,22 @@ In this lab you are going to install the Cilium CNI plugin and explore the Kuber
     The Operator is responsible for managing duties in the cluster which should logically be handled once for the entire cluster.
     The Agent runs on each node in the cluster and configures Pod network interfaces as workloads are created and deleted.
 
-    Great! Now if we take a look at the cluster it should be in the `Ready` status.
+    Great! Now if you take a look at the cluster it should be in the `Ready` status.
 
     Let's take a look at the running Pods too by running `kubectl get pod -n kube-system`. CoreDNS and Cilium pods are now running.
 
-    Note that the Pods we have so far are part of the Kubernetes system itself, therefor they run in a namespace called `kube-system`.
+    Note that the Pods you have so far are part of the Kubernetes system itself, therefor they run in a namespace called `kube-system`.
 
 ## Deploy an application
 
-1. Let’s deploy our first app on Kubernetes with the kubectl create deployment command. We need to provide the deployment name and app image location.
+1. Let’s deploy our first app on Kubernetes with the kubectl create deployment command. You need to provide the deployment name and app image location.
 
     ```sh
-    kubectl create deployment kubernetes-bootcamp --image=gcr.io/google-samples/kubernetes-bootcamp:v1
+    kubectl create deployment hello-app --image=gcr.io/google-samples/hello-app:1.0
     ```
 
     Great! You just deployed your first application by creating a deployment in the `default` namespace. This performed a few things for you:
-    * searched for a suitable node where an instance of the application could be run (we have only 1 available node);
+    * searched for a suitable node where an instance of the application could be run (you have only 1 available node);
     * scheduled the application to run on that Node;
     * configured the cluster to reschedule the instance on a new Node when needed.
 
@@ -52,7 +54,7 @@ In this lab you are going to install the Cilium CNI plugin and explore the Kuber
 
     You should see `0/1` in the `READY` column. It represents the ratio of `CURRENT/DESIRED` replicas. This means that the pod seems not to come up. Let's invenstigate more.
 
-3. List Pods and take note of the `kubernetes-bootcamp` pod name.
+3. List Pods and take note of the pod name.
 
     ```sh
     kubectl get pods
@@ -81,7 +83,28 @@ In this lab you are going to install the Cilium CNI plugin and explore the Kuber
     kubectl taint node --all node-role.kubernetes.io/control-plane-
     ```
 
-6. Now the deployment should be ready. If not, delete (`kubectl delete deployment kubernetes-bootcamp`) and recreate it.
+6. Now the deployment should be ready. If not, delete (`kubectl delete deployment hello-app`) and recreate it.
+
+7. Run the following command to see the ReplicaSet created by the Deployment.
+
+    ```sh
+    kubectl get replicasets
+    ```
+
+    The output is similar to this:
+
+    ```sh
+    NAME                   DESIRED   CURRENT   READY   AGE
+    hello-app-5c7f66c6b6   1         1         1       1m8s
+    ```
+
+    **Note**: The name of the ReplicaSet is always formatted as `[DEPLOYMENT-NAME]-[HASH]`. This name will become the basis for the Pods which are created.
+
+8. The Deployment automatically generates labels for each Pod in order to use them in the selctor. Run the following to see the Pod's labels
+
+    ```sh
+    kubectl get pods --show-labels
+    ```
 
 ## Explore the application
 
@@ -91,9 +114,9 @@ In this lab you are going to install the Cilium CNI plugin and explore the Kuber
     kubectl logs $POD_NAME
     ```
 
-    **Note**: We don't need to specify the container name, because we only have one container inside the pod.
+    **Note**: You don't need to specify the container name, because you only have one container inside the pod.
 
-2. We can execute commands directly on the container once the Pod is up and running. Let's list the environment variables:
+2. You can execute commands directly on the container once the Pod is up and running. Let's list the environment variables:
 
     ```sh
     kubectl exec $POD_NAME -- env
@@ -111,59 +134,9 @@ In this lab you are going to install the Cilium CNI plugin and explore the Kuber
     curl localhost:8080
     ```
 
-    **Note**: here we used localhost because we executed the command inside the NodeJS Pod.
+    **Note**: here you used localhost because you executed the command inside the NodeJS Pod.
 
-5. To close the container connection type:
-
-    ```sh
-    exit
-    ```
-
-## Verify Pod-to-Pod communication
-
-1. In a microservice architecture services in Pods need to communicate to each other. First we need to take note of its IP address.  
-
-    ```sh
-    export POD_IP=$(kubectl get pods -o go-template --template '{{range .items}}{{.status.podIP}}{{end}}')
-    ```
-
-2. Let's create a client Pod from which we can make HTTP requests to the `kubernetes-bootcamp` server. In this case we are going to create a YAML manifest describing the Pod object, which is the recommended way to create Kubernetes resources.
-
-    ```sh
-    cat <<EOF | tee client-pod.yaml > /dev/null
-    apiVersion: v1
-    kind: Pod
-    metadata:
-      name: client
-    spec:
-      containers:
-      - name: shell
-        image: busybox
-        tty: true
-        env:
-        - name: KUBERNETES_BOOTCAMP
-          value: "$POD_IP"
-        resources:
-          limits:
-            cpu: "100m"
-            memory: "128Mi"
-    EOF
-    kubectl apply -f client-pod.yaml
-    ```
-
-3. Let's start a shell session in it.
-
-    ```sh
-    kubectl exec -it client -- sh
-    ```
-
-4. Make an HTTP request and verify that you get a response.
-
-    ```sh
-    wget -qO - http://$KUBERNETES_BOOTCAMP:8080
-    ```
-
-5. Close the connection.
+5. To close the container session type:
 
     ```sh
     exit
@@ -171,12 +144,12 @@ In this lab you are going to install the Cilium CNI plugin and explore the Kuber
 
 ## Scaling the deployment
 
-In order to facilitate more load, we may need to scale up the number of replicas for a microservice.
+In order to facilitate more load, you may need to scale up the number of replicas for a microservice.
 
 1. Scale the deployment by running:
 
     ```sh
-    kubectl scale deployments/kubernetes-bootcamp --replicas=4
+    kubectl scale deployments/hello-app --replicas=4
     ```
 
 2. Show the deployments to verify the current number of replicas matches the desired one.
@@ -187,7 +160,7 @@ In order to facilitate more load, we may need to scale up the number of replicas
 
     You should see `4/4` in the `READY` column. If not, run again the command above.
 
-3. The change was applied, and we have 4 instances of the application available. Next, let’s check if the number of Pods changed:
+3. The change was applied, and you have 4 instances of the application available. Next, let’s check if the number of Pods changed:
 
     ```sh
     kubectl get pods -o wide
@@ -196,118 +169,126 @@ In order to facilitate more load, we may need to scale up the number of replicas
 4. There are 4 Pods now, with different IP addresses. The change was registered in the Deployment events log. To check that, use the describe command:
 
     ```sh
-    kubectl describe deployments/kubernetes-bootcamp
+    kubectl describe deployments/hello-app
     ```
 
-## Load balancing
+## Deploy a new version of the application
 
-Now that we have multiple replicas of the application we need a way to load balance requests among them.
-
-**Services** allow us to hide the ephimeral nature of Pods and to implement a random load balancing mechanism using a fixed front-end IP address and an associated domain name internally resolvable.
-
-1. Expose the deployment using a service which forwards every request arriving on port `80` to port `8080` of the endpoints.
+1. To update the image of the application to version 2 run:
 
     ```sh
-    kubectl expose deployment kubernetes-bootcamp --port 80 --target-port 8080
+    kubectl set image deployments/hello-app hello-app=gcr.io/google-samples/hello-app:2.0
     ```
 
-2. Listing all services you should see the one just created.
+    The command notified the Deployment to use a different image for your app and initiated a rolling update.
+
+2. Check the status of the new Pods, and view the old one terminating.
 
     ```sh
-    kubectl get services
+    kubectl get pods -o wide
     ```
 
-    **Note**: The service has received a unique ClusterIP and an entry in the cluster DNS has been created.
+    **Note**: The new Pods get new IP addresses.
 
-3. Open a shell session in the `client` pod.
+3. Verify the rollout is successfully completed
 
     ```sh
-    kubectl exec -it client -- sh
+    kubectl rollout status deployment hello-app
     ```
 
-4. Verify you get the same response using the service name as hostname in the request.
+4. Verify that the `hello-app` service has updated the endpoints with the new Pods IP addresses.
 
     ```sh
-    wget -qO - http://kubernetes-bootcamp
+    kubectl describe service hello-app
     ```
 
-    > 💡 Run the above command multiple times to see how requests are load balanced among the four replicas.
-
-5. Close the session to the client Pod.
+5. You can check if the service is still accessible via the `NodePort` service by running:
 
     ```sh
-    exit
+    curl http://$HOST_IP:$NODE_PORT
     ```
 
-## Expose the application publicly
-
-Often front-end microservices need to be reached from the outside world. The very basic solution is to use a `NodePort` service.
-
-1. Delete the ClusterIP service we previously created.
-
-    ```sh
-    kubectl delete service kubernetes-bootcamp
-    ```
-
-2. In the next step we are going to create a service yaml definition where we need to refer to the set of target Pods based on labels using the selector. Show Pods with their labels.
-
-    ```sh
-    kubectl get pod --show-labels -o wide
-    ```
-
-    When we created the deployment, Kubernetes labeled the Pods for us whit the label `app=kubernetes-bootcamp`.
-    
-
-3. Create a new `NodePort` service from a YAML manifest selecting the target Pods using the label `app=kubernetes-bootcamp`.
-
-    ```sh
-    cat <<EOF | tee service.yaml > /dev/null
-    apiVersion: v1
-    kind: Service
-    metadata:
-      name: kubernetes-bootcamp
-    spec:
-      type: NodePort
-      selector:
-        app: kubernetes-bootcamp
-      ports:
-      - name: http
-        port: 80
-        targetPort: 8080
-    EOF
-    kubectl apply -f service.yaml
-    ```
-
-4. List the services:
-
-    ```sh
-    kubectl get services
-    ```
-
-    You should see an output like the following:
+    Now you should receive a reply like the following:
 
     ```plaintext
-    NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-    kubernetes            ClusterIP   10.96.0.1      <none>        443/TCP        5h
-    kubernetes-bootcamp   NodePort    10.96.138.36   <none>        80:31203/TCP   13s
+    Hello, world!
+    Version: 2.0.0
+    Hostname: hello-app-5c7f66c6b6-nqll9
     ```
 
-    The `kubernetes-bootcamp` service is now of type `NodePort` and the assigned port is `31203`.
-    
-    **Note**: The port number may differ from yours. 
-
-5. Take note of the exposed port and verify the endpoints include the IP addresses of the Pods listed at step 2.
+6. Let's list the replicasets to see that the Deployment updated the Pods by creating a new ReplicaSet and scaling it up to 4 replicas, as well as scaling down the old ReplicaSet to 0 replicas.
 
     ```sh
-    export NODE_PORT=$(kubectl get services/kubernetes-bootcamp -o go-template='{{(index .spec.ports 0).nodePort}}')
-    kubectl describe service kubernetes-bootcamp -o long | grep Endpoints
+    kubectl get replicasets
     ```
 
-6. Use curl to make an HTTP request, this time from outside the cluster using the IP address and port of the host.
+    The output is similar to this:
+
+    ```plaintext
+    NAME                   DESIRED   CURRENT   READY   AGE
+    hello-app-5c7f66c6b6   4         4         4       15m
+    hello-app-f4b774b69    0         0         0       18s
+    ```
+
+## Rolling back a deployment
+
+1. Suppose that you made a typo while updating the Deployment, by putting the image name as `hello-app:2.1` instead of `hello-app:2.0`.
 
     ```sh
-    export HOST_IP=$(hostname -I)
-    curl http://$IP:$NODE_PORT
+    kubectl set image deployments/hello-app hello-app=gcr.io/google-samples/hello-app:2.1
     ```
 
-    Hooray! The application is now reachable from the world.
+2. The rollout gets stuck. You can verify it by checking the rollout status:
+
+    ```sh
+    kubectl rollout status deployment hello-app
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    Waiting for rollout to finish: 2 out of 4 new replicas have been updated...
+    ```
+    Press Ctrl-C to stop the above rollout status watch.
+
+3. Looking at the Pods created, you see that 2 Pods created by new ReplicaSet is stuck in an image pull loop.
+
+    ```sh
+    kubectl get pods
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    NAME                         READY   STATUS             RESTARTS   AGE
+    hello-app-5c7f66c6b6-dm2zn   1/1     Running            0          35m
+    hello-app-5c7f66c6b6-fklpb   1/1     Running            0          35m
+    hello-app-5c7f66c6b6-nqll9   1/1     Running            0          35m
+    hello-app-6f7cc84b47-2mqll   0/1     ImagePullBackOff   0          10s
+    hello-app-6f7cc84b47-qhpwp   0/1     ImagePullBackOff   0          10s
+    ```
+
+    **Note**: The Deployment controller stops the bad rollout automatically, and stops scaling up the new ReplicaSet.
+
+4. To fix this, you need to rollback to a previous revision of Deployment that is stable.
+
+    ```sh
+    kubectl rollout undo deployment hello-app
+    ```
+
+5. Check if the rollback was successful and the Deployment is running as expected, run:
+
+    ```sh
+    kubectl get deployment hello-app
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+    hello-app   4/4     4            4           1m21s
+    ```
+
+## Next
+
+[Lab 05](./lab05.md)

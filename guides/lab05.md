@@ -155,7 +155,7 @@ Often front-end applications need to be reached from the outside world. The very
 5. Take note of the exposed port and verify the endpoints include the IP addresses of the Pods listed at step 2.
 
     ```sh
-    export NODE_PORT=$(kubectl get services/hello-app -o go-template='{{(index .spec.ports 0).nodePort}}')
+    export NODE_PORT=$(kubectl get services/hello-app -o jsonpath={.spec.ports[0].nodePort})
     kubectl describe service hello-app
     ```
 
@@ -168,4 +168,160 @@ Often front-end applications need to be reached from the outside world. The very
 
     Hooray! The application is now reachable from the world.
 
-## Ingress [TODO]
+7. Clean up deleting both the `hello-app` Deployment and the Service.
+
+    ```sh
+    kubectl delete deployment hello-app
+    kubectl delete service hello-app
+    ```
+
+## Install an Ingress Controller
+
+The downside of externally exposed services, like `NodePort` or `LoadBalancer`, is that you need to keep track of a bunch of IPs and ports.
+
+Kubernetes introduced an ingress framework to allow a single externally facing gateway to route HTTP/HTTPS traffic to multiple backend services. 
+
+Traffic routing is controlled by set of rules defined by Ingress resources that are fulfilled by an Ingress Controller.
+Unlike other types of controllers which run as part of the kube-controller-manager binary, Ingress controllers are not started automatically with a cluster.
+
+There are several open-source Ingress Controller implementations. You are going to deploy the [NGINX ingress controller](https://kubernetes.github.io/ingress-nginx/).
+
+1. Deploy the ingress controller.
+
+    ```sh
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.6.4/deploy/static/provider/cloud/deploy.yaml
+    ```
+
+    As the output shows, the manifest applied above creates a new namespace called `ingress-nginx`, plus a bunch of resources needed by the controller to function properly, including the service named `ingress-nginx-controller` and the IngressClass `nginx` (`kubectl get ingressclasses`).
+
+2. Verify the controller is up and running.
+
+    ```sh
+    kubectl get pods -n ingress-nginx
+    ```
+
+    **Note**: Since the controller has not been deployed in the `default` namespace, we need to include the `-n <namespace>` flag to list resources in the specified namespace.
+
+    The output is similar to this:
+
+    ```plaintext
+    NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+    ingress-nginx-controller   1/1     1            1           44s
+    ```
+
+3. Let's show the `ingress-nginx-controller` Service.
+
+    ```sh
+    kubectl get service ingress-nginx-controller -n ingress-nginx
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+    ingress-nginx-controller   LoadBalancer   10.96.186.119   <pending>     80:30958/TCP,443:31600/TCP   1m2s
+    ```
+
+    By default, this Service is of type `LoadBalancer` and the assignment of an external IP is in the `pending` status. Howerver a Service of type `LoadBalancer` includes all the funcitonalities of the `NodePort` one. In fact, the service is already exposed on port `30958` and `31600` of the host.
+
+4. Update the Service `type` field to `NodePort`.
+
+    ```sh
+    kubectl patch service ingress-nginx-controller -n ingress-nginx -p '{"spec": {"type": "NodePort"}}'
+    ```
+
+## Ingress Fan Out
+
+A fanout configuration routes traffic from a single IP address to more than one Service, based on the HTTP URI being requested.
+
+Now you are going to create two Deployments of different versions of the same application with each respective Services. Both of them will be accessible thtough the Ingress Controller at path respectively `/v1` and `/v2`.
+
+1. Create the `v1` Deployment.
+
+    ```sh
+    kubectl create deployment hello-app-v1 --image=gcr.io/google-samples/hello-app:1.0
+    ```
+
+2. Expose the `v1` Deployment on port `8001`.
+
+    ```sh
+    kubectl expose deployment hello-app-v1 --port 8001 --target-port 8080
+    ```
+
+3. Create the `v2` Deployment.
+
+    ```sh
+    kubectl create deployment hello-app-v2 --image=gcr.io/google-samples/hello-app:2.0
+    ```
+
+4. Expose the `v2` Deployment on port `8002`.
+
+    ```sh
+    kubectl expose deployment hello-app-v2 --port 8002 --target-port 8080
+    ```
+
+5. Create the Ingress resource with a rule with two paths, one per application version.
+
+    ```sh
+    cat <<EOF | tee hello-app-ingress.yaml > /dev/null
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: hello-app-ingress
+    spec:
+      ingressClassName: nginx
+      rules:
+      - http:
+          paths:
+          - path: /v1
+            pathType: Prefix
+            backend:
+              service:
+                name: hello-app-v1
+                port:
+                  number: 8001
+          - path: /v2
+            pathType: Prefix
+            backend:
+              service:
+                name: hello-app-v2
+                port:
+                  number: 8002
+    EOF
+    kubectl apply -f hello-app-ingress.yaml
+    ```
+
+    **Note**: In order to attach this Ingress to the right Ingress Controller you must specify the `ingressClassName: nginx`. 
+
+6. Verify you can reach both versions of the `hello-app` using the Ingress Controller Service.
+
+    ```sh
+    export IC_NODE_PORT=$(kubectl get service ingress-nginx-controller -n ingress-nginx -o jsonpath={.spec.ports[0].nodePort})
+    curl http://$HOST_IP:$IC_NODE_PORT/v1
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    Hello, world!
+    Version: 1.0.0
+    Hostname: hello-app-v1-755c49459-c2g7z
+    ```
+
+    Try to use the `/v2` path.
+
+    ```sh
+    curl http://$HOST_IP:$IC_NODE_PORT/v2
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    Hello, world!
+    Version: 2.0.0
+    Hostname: hello-app-v2-7796f8f5-hf25b
+    ```
+
+## Next
+
+[Lab 06](./lab06.md)

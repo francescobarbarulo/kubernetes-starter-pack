@@ -196,27 +196,7 @@ In order to facilitate more load, you may need to scale up the number of replica
     kubectl rollout status deployment hello-app
     ```
 
-4. Verify that the `hello-app` service has updated the endpoints with the new Pods IP addresses.
-
-    ```sh
-    kubectl describe service hello-app
-    ```
-
-5. You can check if the service is still accessible via the `NodePort` service by running:
-
-    ```sh
-    curl http://$HOST_IP:$NODE_PORT
-    ```
-
-    Now you should receive a reply like the following:
-
-    ```plaintext
-    Hello, world!
-    Version: 2.0.0
-    Hostname: hello-app-5c7f66c6b6-nqll9
-    ```
-
-6. Let's list the replicasets to see that the Deployment updated the Pods by creating a new ReplicaSet and scaling it up to 4 replicas, as well as scaling down the old ReplicaSet to 0 replicas.
+4. Let's list the replicasets to see that the Deployment updated the Pods by creating a new ReplicaSet and scaling it up to 4 replicas, as well as scaling down the old ReplicaSet to 0 replicas.
 
     ```sh
     kubectl get replicasets

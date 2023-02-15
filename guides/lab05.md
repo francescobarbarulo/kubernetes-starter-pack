@@ -197,7 +197,7 @@ There are several open-source Ingress Controller implementations. You are going 
 2. Verify the controller is up and running.
 
     ```sh
-    kubectl get pods -n ingress-nginx
+    kubectl get deployments -n ingress-nginx
     ```
 
     **Note**: Since the controller has not been deployed in the `default` namespace, we need to include the `-n <namespace>` flag to list resources in the specified namespace.
@@ -234,7 +234,7 @@ There are several open-source Ingress Controller implementations. You are going 
 
 A fanout configuration routes traffic from a single IP address to more than one Service, based on the HTTP URI being requested.
 
-Now you are going to create two Deployments of different versions of the same application with each respective Services. Both of them will be accessible thtough the Ingress Controller at path respectively `/v1` and `/v2`.
+Now you are going to create two Deployments of different versions of the same application with each respective Services. Both of them will be accessible through the Ingress Controller at path respectively `/v1` and `/v2`.
 
 1. Create the `v1` Deployment.
 

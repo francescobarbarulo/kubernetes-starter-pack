@@ -327,10 +327,8 @@ Now you are going to create two Deployments of different versions of the same ap
 1. Delete Deployment and Service resources you created in the steps before.
 
     ```sh
-    kubectl delete deployment hello-app
     kubectl delete deployment hello-app-v1
     kubectl delete deployment hello-app-v2
-    kubectl delete service hello-app
     kubectl delete service hello-app-v1
     kubectl delete service hello-app-v2
     ```

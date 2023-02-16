@@ -57,7 +57,7 @@ As you did with the CNI plugin, you need to let Kubernetes be able to interact w
     kubectl get CSIDriver
     ```
 
-    The output is similar to that:
+    The output is similar to this:
 
     ```plaintext
     NAME                  ATTACHREQUIRED   PODINFOONMOUNT   STORAGECAPACITY   TOKENREQUESTS   REQUIRESREPUBLISH   MODES                  AGE
@@ -262,8 +262,25 @@ The installed CSI driver and the created `StorageClass` enable you to expand PVC
 1. Try to increase the size of the `csi-pvc` Persistent Volume Claim to `2Gi`.
 
     ```sh
-    sed -i 's/1Gi/2Gi/' csi-pvc.yaml
-    kubectl apply -f csi-pvc.yaml
+    kubectl patch persistentvolumeclaim csi-pvc -p '{"spec": {"resources": {"requests": {"storage": "2Gi"}}}}'
     ```
 
 2. Wait for a few seconds and then run `kubectl get pvc`. The `CAPACITY` should be increased to `2Gi`.
+
+## Clean up
+
+1. Delete Deployment and PVC resources.
+
+    ```sh
+    kubectl delete deployment csi-app
+    kubectl wait --for=delete pod/$POD_NAME --timeout=60s
+    kubectl delete persistentvolumeclaim csi-pvc
+    ```
+
+2. Verify the Persistent Volume is automatically deleted due to the `csi-hostpath-sc` Storage Class reclaim policy set to `Delete`.
+
+    ```sh
+    kubectl get persistentvolumes
+    ```
+
+    The output should be `No resources found`.

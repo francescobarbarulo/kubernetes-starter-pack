@@ -284,3 +284,7 @@ The installed CSI driver and the created `StorageClass` enable you to expand PVC
     ```
 
     The output should be `No resources found`.
+
+## Next
+
+[Lab 07](./lab07.md)

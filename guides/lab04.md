@@ -58,10 +58,10 @@ Open the terminal and run the following commands listed below.
 
     ```sh
     kubectl get pods
-    export POD_NAME=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{end}}')
+    export POD_NAME=$(kubectl get pods -o jsonpath='{range .items[*]}{.metadata.name}{end}')
     ```
 
-4. Dig deeply in the Pod details.
+4. Inspect the Pod to get more details.
 
     ```sh
     kubectl describe pod $POD_NAME

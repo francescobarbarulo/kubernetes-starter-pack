@@ -1,6 +1,6 @@
 # Lab 05
 
-In this lab you are going to use Services to expose Pods to the cluster.
+In this lab you are going to use Services to expose Pods to the cluster. The you are going yo install an Ingress Controller to forward traffic to the right service based on the HTTP URI.
 
 Open the terminal and run the following commands listed below.
 
@@ -55,7 +55,7 @@ These are problems a Service solves.
 4. You should now be able to curl the nginx Service on `<CLUSTER-IP>:<PORT>` from any node in your cluster.
 
     ```sh
-    export CLUSTER_IP=$(kubectl get services hello-app -o go-template='{{(index .spec.clusterIP)}}')
+    export CLUSTER_IP=$(kubectl get services hello-app -o jsonpath='{.spec.clusterIP}')
     curl http://$CLUSTER_IP:80
     ```
 
@@ -320,6 +320,19 @@ Now you are going to create two Deployments of different versions of the same ap
     Hello, world!
     Version: 2.0.0
     Hostname: hello-app-v2-7796f8f5-hf25b
+    ```
+
+## Clean up
+
+1. Delete Deployment and Service resources you created in the steps before.
+
+    ```sh
+    kubectl delete deployment hello-app
+    kubectl delete deployment hello-app-v1
+    kubectl delete deployment hello-app-v2
+    kubectl delete service hello-app
+    kubectl delete service hello-app-v1
+    kubectl delete service hello-app-v2
     ```
 
 ## Next

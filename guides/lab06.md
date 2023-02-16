@@ -204,7 +204,7 @@ Users request dynamically provisioned storage by including a storage class in th
 3. Check it is writing to the log file.
 
     ```sh
-    export POD_NAME=$(kubectl get pod -o jsonpath='{.items[0].metadata.name}')
+    export POD_NAME=$(kubectl get pods -l app=csi-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
     kubectl exec -it $POD_NAME -- cat /csi-data/logs.txt
     ```
 
@@ -230,7 +230,7 @@ Users request dynamically provisioned storage by including a storage class in th
 5. Verify the log file still contains the old logs.
 
     ```sh
-    export POD_NAME=$(kubectl get pod -o jsonpath='{.items[0].metadata.name}')
+    export POD_NAME=$(kubectl get pods -l app=csi-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
     kubectl exec -it $POD_NAME -- cat /csi-data/logs.txt
     ```
 

@@ -58,7 +58,7 @@ Open the terminal and run the following commands listed below.
 
     ```sh
     kubectl get pods
-    export POD_NAME=$(kubectl get pods -o jsonpath='{range .items[*]}{.metadata.name}{end}')
+    export POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
     ```
 
 4. Inspect the Pod to get more details.
@@ -100,17 +100,27 @@ Open the terminal and run the following commands listed below.
 
     **Note**: The name of the ReplicaSet is always formatted as `[DEPLOYMENT-NAME]-[HASH]`. This name will become the basis for the Pods which are created.
 
-8. The Deployment automatically generates labels for each Pod in order to use them in the selctor. Run the following to see the Pod's labels
+8. The Deployment automatically generates labels for each Pod in order to use them in the selctor. Run the following to see the Pod's labels.
 
     ```sh
     kubectl get pods --show-labels
     ```
+
+9. If you try to delete a Pod belonging to a Deployment, the ReplicaSet controller will recreate a new one.
+
+    ```sh
+    kubectl delete pod $POD_NAME
+    ```
+
+    **Note**: The Pod name is changed.
+
 
 ## Explore the application
 
 1. Anything that the application would normally send to STDOUT becomes logs for the container within the Pod. Retrieve these logs:
 
     ```sh
+    export POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
     kubectl logs $POD_NAME
     ```
 

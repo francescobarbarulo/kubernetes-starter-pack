@@ -331,6 +331,7 @@ Now you are going to create two Deployments of different versions of the same ap
     kubectl delete deployment hello-app-v2
     kubectl delete service hello-app-v1
     kubectl delete service hello-app-v2
+    kubectl delete ingress hello-app-ingress
     ```
 
 ## Next

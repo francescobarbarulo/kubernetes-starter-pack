@@ -55,10 +55,10 @@ Open the terminal and run the following commands listed below.
 4. Generate the kubeconfig file tied with the admin key and certificate just created.
 
     ```sh
-    export CA_CRT=$(cat /etc/kubernetes/pki/ca.crt | base64 -w 0)
-    export KEY=$(cat admin.key | base64 -w 0)
-    export CERT=$(cat admin.crt | base64 -w 0)
-    export API_SERVER=$(hostname -I | awk '{print $1}')
+    CA_CRT=$(cat /etc/kubernetes/pki/ca.crt | base64 -w 0)
+    KEY=$(cat admin.key | base64 -w 0)
+    CERT=$(cat admin.crt | base64 -w 0)
+    API_SERVER=$(hostname -I | awk '{print $1}')
     cat <<EOF | tee .kube/config > /dev/null
     apiVersion: v1
     kind: Config

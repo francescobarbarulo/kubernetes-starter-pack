@@ -71,7 +71,7 @@ A cluster administrator can define as many `StorageClass` objects as needed, eac
 1. Create a StorageClass which refers to the `hostpath.csi.k8s.io` provisioner:
 
     ```sh
-    cat <<EOF | tee csi-hostpath-sc.yaml > /dev/null
+    echo '
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
     metadata:
@@ -80,8 +80,7 @@ A cluster administrator can define as many `StorageClass` objects as needed, eac
     reclaimPolicy: Delete
     volumeBindingMode: Immediate
     allowVolumeExpansion: true
-    EOF
-    kubectl apply -f csi-hostpath-sc.yaml
+    ' | kubectl apply -f -
     ```
 
 2. Verify the StorageClass has been created
@@ -117,7 +116,7 @@ Users request dynamically provisioned storage by including a storage class in th
 1. Create a claim that uses the `csi-hostpath-sc` StorageClass.
 
     ```sh
-    cat <<EOF | tee csi-pvc.yaml > /dev/null
+    echo '
     apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
@@ -129,8 +128,7 @@ Users request dynamically provisioned storage by including a storage class in th
         requests:
           storage: 1Gi
       storageClassName: csi-hostpath-sc # can be omitted (default class)
-    EOF
-    kubectl apply -f csi-pvc.yaml
+    ' | kubectl apply -f -
     ```
 
 2. Verify the PV has been automatically created and successfully bound to the PVC.
@@ -204,7 +202,7 @@ Users request dynamically provisioned storage by including a storage class in th
 3. Check it is writing to the log file.
 
     ```sh
-    export POD_NAME=$(kubectl get pods -l app=csi-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
+    POD_NAME=$(kubectl get pods -l app=csi-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
     kubectl exec -it $POD_NAME -- cat /csi-data/logs.txt
     ```
 
@@ -222,7 +220,7 @@ Users request dynamically provisioned storage by including a storage class in th
 4. Delete and recreate the Deployment.
 
     ```sh
-    kubectl delete -f csi-app.yaml
+    kubectl delete deployment csi-app
     kubectl wait --for=delete pod/$POD_NAME --timeout=60s
     kubectl apply -f csi-app.yaml
     ```
@@ -230,7 +228,7 @@ Users request dynamically provisioned storage by including a storage class in th
 5. Verify the log file still contains the old logs.
 
     ```sh
-    export POD_NAME=$(kubectl get pods -l app=csi-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
+    POD_NAME=$(kubectl get pods -l app=csi-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
     kubectl exec -it $POD_NAME -- cat /csi-data/logs.txt
     ```
 

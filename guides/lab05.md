@@ -55,7 +55,7 @@ These are problems a Service solves.
 4. You should now be able to curl the nginx Service on `<CLUSTER-IP>:<PORT>` from any node in your cluster.
 
     ```sh
-    export CLUSTER_IP=$(kubectl get services hello-app -o jsonpath='{.spec.clusterIP}')
+    CLUSTER_IP=$(kubectl get services hello-app -o jsonpath='{.spec.clusterIP}')
     curl http://$CLUSTER_IP:80
     ```
 
@@ -117,7 +117,7 @@ Often front-end applications need to be reached from the outside world. The very
 2. Create a new `NodePort` service from a YAML manifest selecting the target Pods using the label `app=hello-app`.
 
     ```sh
-    cat <<EOF | tee service.yaml > /dev/null
+    echo '
     apiVersion: v1
     kind: Service
     metadata:
@@ -130,8 +130,7 @@ Often front-end applications need to be reached from the outside world. The very
       - name: http
         port: 80
         targetPort: 8080
-    EOF
-    kubectl apply -f service.yaml
+    ' | kubectl apply -f -
     ```
 
 4. List the services:
@@ -155,14 +154,14 @@ Often front-end applications need to be reached from the outside world. The very
 5. Take note of the exposed port and verify the endpoints include the IP addresses of the Pods listed at step 2.
 
     ```sh
-    export NODE_PORT=$(kubectl get services/hello-app -o jsonpath={.spec.ports[0].nodePort})
+    NODE_PORT=$(kubectl get services/hello-app -o jsonpath={.spec.ports[0].nodePort})
     kubectl describe service hello-app
     ```
 
 6. Use curl to make an HTTP request, this time from outside the cluster using the IP address and port of the host.
 
     ```sh
-    export HOST_IP=$(hostname -I | awk '{print $1}')
+    HOST_IP=$(hostname -I | awk '{print $1}')
     curl http://$HOST_IP:$NODE_PORT
     ```
 
@@ -263,7 +262,7 @@ Now you are going to create two Deployments of different versions of the same ap
 5. Create the Ingress resource with a rule with two paths, one per application version.
 
     ```sh
-    cat <<EOF | tee hello-app-ingress.yaml > /dev/null
+    echo '
     apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
@@ -287,8 +286,7 @@ Now you are going to create two Deployments of different versions of the same ap
                 name: hello-app-v2
                 port:
                   number: 8002
-    EOF
-    kubectl apply -f hello-app-ingress.yaml
+    ' | kubectl apply -f -
     ```
 
     **Note**: In order to attach this Ingress to the right Ingress Controller you must specify the `ingressClassName: nginx`. 
@@ -296,7 +294,7 @@ Now you are going to create two Deployments of different versions of the same ap
 6. Verify you can reach both versions of the `hello-app` using the Ingress Controller Service.
 
     ```sh
-    export IC_NODE_PORT=$(kubectl get service ingress-nginx-controller -n ingress-nginx -o jsonpath={.spec.ports[0].nodePort})
+    IC_NODE_PORT=$(kubectl get service ingress-nginx-controller -n ingress-nginx -o jsonpath={.spec.ports[0].nodePort})
     curl http://$HOST_IP:$IC_NODE_PORT/v1
     ```
 

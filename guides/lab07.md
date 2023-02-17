@@ -13,7 +13,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
 2. Create a Service resource for the database instance. Since the database is a stateful application it recommended to use a headless service.
 
     ```sh
-    cat <<EOF | tee mysql-headless-svc.yaml > /dev/null
+    echo '
     apiVersion: v1
     kind: Service
     metadata:
@@ -28,14 +28,13 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
       ports:
       - name: mysql
         port: 3306
-    EOF
-    kubectl apply -f mysql-headless-svc.yaml
+    ' | kubectl apply -f -
     ```
 
 3. Create the `mysql` StatefulSet setting the required `MYSQL_ROOT_PASSWORD` environment variable using the secret created ast step 1.
 
     ```sh
-    cat <<EOF | tee mysql-statefulset.yaml > /dev/null
+    echo '
     apiVersion: apps/v1
     kind: StatefulSet
     metadata:
@@ -90,8 +89,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
           resources:
             requests:
               storage: 5Gi
-    EOF
-    kubectl apply -f mysql-statefulset.yaml
+    ' | kubectl apply -f -
     ```
 
 ## Deploy Wordpress application
@@ -99,7 +97,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
 1. Create a PVC for Wordpress configuration data.
 
     ```sh
-    cat <<EOF | tee wordpress-pvc.yaml > /dev/null
+    echo '
     apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
@@ -112,8 +110,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
       resources:
         requests:
           storage: 5Gi
-    EOF
-    kubectl apply -f wordpress-pvc.yaml
+    ' | kubectl apply -f -
     ```
 
     Verify the PVC has successfully created by `kubectl get pvc`.
@@ -121,7 +118,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
 2. Create a Deployment for Wordpress application with a Persistent Volume Claim reference to `wordpress-data`.
 
     ```sh
-    cat <<EOF | tee wordpress-deployment.yaml > /dev/null
+    echo '
     apiVersion: apps/v1
     kind: Deployment
     metadata:
@@ -171,8 +168,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
           - name: data
             persistentVolumeClaim:
               claimName: wordpress-data
-    EOF
-    kubectl apply -f wordpress-deployment.yaml
+    ' | kubectl apply -f -
     ```
 
     The wordpress container requires the `WORDPRESS_DB_HOST` and `WORDPRESS_DB_PASSWORD` environment variables. The first is populated using the headless service in the expected format (`<pod-name>.<service-name>`); the second is populated from the `mysql-creds` secret.
@@ -183,7 +179,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
 3. Create a `ClusterIP` Service for the wordpress Deployment.
 
     ```sh
-    cat <<EOF | tee wordpress-service.yaml > /dev/null
+    echo '
     apiVersion: v1
     kind: Service
     metadata:
@@ -197,14 +193,13 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
       ports:
       - name: http
         port: 80
-    EOF
-    kubectl apply -f wordpress-service.yaml
+    ' | kubectl apply -f -
     ```
 
 4. Create an Ingress resource to expose to wordpress service outside the cluster.
 
     ```sh
-    cat <<EOF | tee wordpress-ingress.yaml > /dev/null
+    echo '
     apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
@@ -223,8 +218,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
                 name: wordpress
                 port:
                   number: 80
-    EOF
-    kubectl apply -f wordpress-ingress.yaml
+    ' | kubectl apply -f -
     ```
 
     The wordpress is exposed through the Ingress Controller on the port of the ingress service. Get it by `kubectl get service -n ingress-nginx` and open the browser at `http://localhost:<nodePort>`.

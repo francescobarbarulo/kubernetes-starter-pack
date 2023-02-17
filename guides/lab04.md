@@ -58,7 +58,7 @@ Open the terminal and run the following commands listed below.
 
     ```sh
     kubectl get pods
-    export POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
+    POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
     ```
 
 4. Inspect the Pod to get more details.
@@ -120,7 +120,7 @@ Open the terminal and run the following commands listed below.
 1. Anything that the application would normally send to STDOUT becomes logs for the container within the Pod. Retrieve these logs:
 
     ```sh
-    export POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
+    POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
     kubectl logs $POD_NAME
     ```
 

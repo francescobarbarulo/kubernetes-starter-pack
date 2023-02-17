@@ -74,7 +74,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
                   name: mysql-creds
                   key: password
             - name: MYSQL_RANDOM_ROOT_PASSWORD
-              value: '1'
+              value: "1"
             ports:
             - name: mysql
               containerPort: 3306

@@ -114,43 +114,20 @@ Open the terminal and run the following commands listed below.
 
     **Note**: The Pod name is changed.
 
-
-## Explore the application
-
-1. Anything that the application would normally send to STDOUT becomes logs for the container within the Pod. Retrieve these logs:
+10. Anything that the application would normally send to `STDOUT` becomes logs for the container within the Pod. Retrieve these logs to verify the server is up:
 
     ```sh
     POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
     kubectl logs $POD_NAME
     ```
 
+    The output is similar to this:
+
+    ```plaintext
+    1970/01/01 16:20:52 Server listening on port 8080
+    ```
+
     **Note**: You don't need to specify the container name, because you only have one container inside the pod.
-
-2. You can execute commands directly on the container once the Pod is up and running. Let's list the environment variables:
-
-    ```sh
-    kubectl exec $POD_NAME -- env
-    ```
-
-3. Let's start a bash session in the Pod's container.
-
-    ```sh
-    kubectl exec -it $POD_NAME -- bash
-    ```
-
-4.  You can check that the application is up by running a curl command:
-
-    ```sh
-    curl localhost:8080
-    ```
-
-    **Note**: here you used localhost because you executed the command inside the NodeJS Pod.
-
-5. To close the container session type:
-
-    ```sh
-    exit
-    ```
 
 ## Scaling the deployment
 
@@ -200,7 +177,7 @@ In order to facilitate more load, you may need to scale up the number of replica
 
     **Note**: The new Pods get new IP addresses.
 
-3. Verify the rollout is successfully completed
+3. Verify the rollout is successfully completed.
 
     ```sh
     kubectl rollout status deployment hello-app
@@ -239,7 +216,7 @@ In order to facilitate more load, you may need to scale up the number of replica
     ```plaintext
     Waiting for rollout to finish: 2 out of 4 new replicas have been updated...
     ```
-    Press Ctrl-C to stop the above rollout status watch.
+    Press `Ctrl-C` to stop the above rollout status watch.
 
 3. Looking at the Pods created, you see that 2 Pods created by new ReplicaSet is stuck in an image pull loop.
 

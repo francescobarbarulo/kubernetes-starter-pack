@@ -12,9 +12,7 @@ Docker provides a containerized local registry that can be started using the `do
 
 1. Create a password file with one entry for the user `testuser`, with password `testpassword`:
     ```sh
-    cd
-    mkdir auth
-    docker run \
+    cd && mkdir auth && docker run \
     --entrypoint htpasswd \
     httpd:2 -Bbn testuser testpassword > auth/htpasswd
     ```

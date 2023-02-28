@@ -83,27 +83,69 @@ Open the terminal and run the following commands listed below.
     kubectl get clusterrolebinding cluster-admin -o yaml
     ```
 
- 3. `system:masters` is a break-glass, super user group that bypasses the authorization layer (e.g. RBAC). Sharing the `admin.conf` with additional users is **not recommended**! Instead, you can use the `kubeadm kubeconfig user` command to generate kubeconfig files for additional users. Kubernetes comes with other ClusterRoles, including the `admin` one, which allows admin access. This role is intended to be granted within a namespace using a **RoleBinding**. Let's create a RoleBinding resource which binds the `admin` ClusterRole to the group `admin`.
+ 3. `system:masters` is a break-glass, super user group that bypasses the authorization layer (e.g. RBAC). Sharing the `admin.conf` with additional users is **not recommended**! Instead, you can use the `kubeadm kubeconfig user` command to generate kubeconfig files for additional users. Kubernetes comes with other ClusterRoles, including the `admin` one, which allows admin access. This role is intended to be granted within a namespace using a **RoleBinding**. View the `admin` ClusterRole.
+
+    ```sh
+    kubectl get clusterrole admin -o yaml
+    ```
+ 
+ 4. Let's bind the `admin` ClusterRole to the group `admin` creating a RoleBinding.
 
     ```sh
     kubectl create rolebinding admin --clusterrole=admin --group=admin
     ```
 
-    **Note**: This RoleBinding will be created in the `default` namespace. Thus, user belonging to `admin` group will have admin access only to this namespace.
+    **Note**: This RoleBinding will be created in the `default` namespace. Thus, user belonging to `admin` group will have admin access only to the `default` namespace.
 
 4. Create a kubeconfig file for user `ksp-user` belonging to the `admin` group.
 
     ```sh
-    kubeadm kubeconfig user --config <(kubectl get cm kubeadm-config -n kube-system -o=jsonpath="{.data.ClusterConfiguration}") --org admin --client-name ksp-user > ksp-user-config.yaml
+    kubectl get cm kubeadm-config -n kube-system -o=jsonpath="{.data.ClusterConfiguration}" > ClusterConfiguration.yaml \
+    && sudo kubeadm kubeconfig user --config ClusterConfiguration.yaml --org admin --client-name ksp-user > ksp-user-config.yaml
     ```
 
-5. View the generated kubeconfig file.
+5. Set the `KUBECONFIG` environment variable to the just created kubeconfig file.
 
     ```sh
-    cat ksp-user-config.yaml
+    export KUBECONFIG=$PWD/ksp-user-config.yaml
     ```
 
-    This kubeconfig file can be shared with the right user and will become its `~/.kube/config` file.
+6. View the generated kubeconfig file.
+
+    ```sh
+    kubectl config view
+    ```
+
+7. Verify you can create namespaced resources (e.g. Roles):
+
+    ```sh
+    kubectl auth can-i create roles
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    yes
+    ```
+
+    But you can not list cluster scoped resources (e.g. Nodes):
+
+    ```sh
+    kubectl auth can-i get nodes
+    ```
+  
+    The output is similar to this:
+
+    ```plaintext
+    Warning: resource 'nodes' is not namespace scoped
+    no
+    ```
+
+8. Unset the `KUBECONFIG` environment variable.
+
+    ```sh
+    unset KUBECONFIG
+    ```
 
 ## Next
 

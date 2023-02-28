@@ -14,7 +14,7 @@ Open the terminal and run the following commands listed below.
 
     You should see the CoreDNS Pods not ready and they will not start up before a network is installed.
 
-3. Install [Cilium](https://cilium.io/) as our CNI plugin.
+2. Install [Cilium](https://cilium.io/) as our CNI plugin.
 
     ```sh
     curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/cni-cilium-install.sh | sh

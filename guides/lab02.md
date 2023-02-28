@@ -35,7 +35,7 @@ Docker provides a containerized local registry that can be started using the `do
 
 1. In the command line, try running the push command:
     ```sh
-    docker push getting-started
+    docker push getting-started:v2
     ```
 
     You probably saw an error like this:
@@ -50,7 +50,7 @@ Docker provides a containerized local registry that can be started using the `do
 2. Use the `docker tag` command to give the `getting-started` image a new name, including the registry hostname. If you don't specify a tag, Docker will use a tag called `latest`.
 
     ```sh
-    docker tag getting-started localhost:5000/getting-started
+    docker tag getting-started:v2 localhost:5000/getting-started:v2
     ```
 
 3. Before pushing the renamed image, login to the local registry using `testpassword` as password when prompted.
@@ -62,7 +62,7 @@ Docker provides a containerized local registry that can be started using the `do
 4. Now try to push again.
 
     ```sh
-    docker push localhost:5000/getting-started
+    docker push localhost:5000/getting-started:v2
     ```
 
 5. Check the image is present on the registry by refreshing the web browser at [`http://localhost:5000/v2/_catalog`](http://localhost:5000/v2/_catalog). You should see a json response like this: `{"repositories":["getting-started"]}`. 
@@ -83,17 +83,16 @@ Now that you pushed the image on the registry, you can safely remove the image f
     docker rm -f <the-container-id>
     ```
 
-3. Use the `docker rmi`command to remove the image:
+3. Use the `docker rmi`command to remove all the images:
 
     ```sh
-    docker rmi localhost:5000/getting-started
-    docker rmi getting-started
+    docker rmi localhost:5000/getting-started:v2 getting-started:v2 getting-started:v1
     ```
 
 4. Now that the `getting-started` image is not present on your machine, you need to pull it from the local registry. This is done automatically with the `docker run` command:
 
     ```sh
-    docker run -d -p 8080:3000 localhost:5000/getting-started
+    docker run -d -p 8080:3000 localhost:5000/getting-started:v2
     ```
 
     You should see the image get pulled down and eventually start up!
@@ -124,7 +123,7 @@ As mentioned, you are going to use a named volume. Think of a named volume as si
 3. Start the todo app container, but add the `-v` flag to specify a volume mount. You will use the named volume and mount it to `/etc/todos`, which will capture all files created at the path.
 
     ```sh
-    docker run -d -p 8080:3000 -v todo-db:/etc/todos localhost:5000/getting-started
+    docker run -d -p 8080:3000 -v todo-db:/etc/todos localhost:5000/getting-started:v2
     ```
 
 4. Once the container starts up, open the app and add a few items to your todo list.
@@ -236,7 +235,7 @@ Let's connect the todo app to MySQL.
       -e MYSQL_USER=root \
       -e MYSQL_PASSWORD=secret \
       -e MYSQL_DB=todos \
-      localhost:5000/getting-started
+      localhost:5000/getting-started:v2
     ```
 
     > You'll notice you're using the value `mysql` as `MYSQL_HOST`. While `mysql` isn't normally a valid hostname, Docker is able to resolve it to the IP address of the mysql container thanks to the `--network-alias` flag.
@@ -272,13 +271,31 @@ Let's connect the todo app to MySQL.
 
 ## Clean up
 
-To clean up your host uninstall docker by running:
+1. Get the root privileges and launch the script.
 
-```sh
-curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/docker-uninstall.sh | sh
-```
+    ```sh
+    sudo su -
+    ```
 
-> ⚠️ Log out and log back in so that your group membership is re-evaluated
+2. Uninstall docker:
+
+    ```sh
+    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/docker-uninstall.sh | sh
+    ```
+
+3. Exit the root shell.
+
+    ```sh
+    exit
+    ```
+
+4. Remove the current user from docker group and delete the docker group.
+
+    ```sh
+    sudo deluser $USER docker
+    ```
+
+5. Log out and log back in so that your group membership is re-evaluated.
 
 
 ## Next

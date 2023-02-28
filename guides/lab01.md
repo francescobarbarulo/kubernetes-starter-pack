@@ -6,18 +6,42 @@ Open the terminal and run the following commands listed below.
 
 ## Install Docker Engine
 
-1. Launch the installation script which will follow the [repository installation method](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
+1. Get the root privileges and launch the script.
+
+    ```sh
+    sudo su -
+    ```
+
+2. Launch the installation script which will follow the [repository installation method](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
 
     ```sh
     curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/docker-install.sh | sh
     ```
 
-    > ⚠️ Log out and log back in so that your group membership is re-evaluated
+3. Exit the root shell.
 
-2. Verify that you can interact with the Docker Engine:
+    ```sh
+    exit
+    ```
+
+4. Manage Docker as non-root user by adding the current user to the `docker` group.
+
+    ```sh
+    sudo usermod -aG docker $USER
+    ```
+
+5. Log out and log back in so that your group membership is re-evaluated.
+
+6. Verify that you can interact with the Docker Engine:
 
     ```sh
     docker ps
+    ```
+    
+    The output is similar to this:
+
+    ```plaintext
+    CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
     ```
 
 ## Explore network interfaces
@@ -69,16 +93,16 @@ You should see a newly route created by Docker that states that all traffic dire
     
     * The [`EXPOSE`](https://docs.docker.com/engine/reference/builder/#expose) instruction informs Docker that the container listens on the specified network ports at runtime. __The `EXPOSE` instruction does not actually publish the port__. It functions as a type of documentation between the person who builds the image and the person who runs the container, about which ports are intended to be published.
 
-3. Build the container image giving the name `getting-started` starting from the current directory (`.`):
+3. Build the container image giving the name `getting-started:v1` starting from the current directory (`.`):
 
     ```sh
-    docker build -t getting-started .
+    docker build -t getting-started:v1 .
     ```
 
 ## Explore the image layers
 
 ```sh
-docker history getting-started
+docker history getting-started:v1
 ```
 
 The output shows all the layers of the image with their sizes.
@@ -90,7 +114,7 @@ Now that you have an image, you can run the application in a container. To do so
 1. Start your container using the docker run command and specify the name of the image you just created:
 
     ```sh
-    docker run -d -p 8080:3000 getting-started
+    docker run -d -p 8080:3000 getting-started:v1
     ```
 
     You use the `-d` flag to run the new container in "detached" mode (in the background). You also use the `-p` flag to create a mapping between the host’s port `8080` to the container’s port `3000`. Without the port mapping, you wouldn’t be able to access the application even if you specified it in the `Dockerfile`.
@@ -109,16 +133,16 @@ At this point, you should have a running todo list manager with a few items, all
     sed -i 's/No items yet! Add one above!/You have no todo items yet! Add one above!/' src/static/js/app.js
     ```
 
-2. Build the updated version of the image using `docker build` command you used previosuly.
+2. Build the updated version of the image with the `v2` tag using `docker build` command you used previosuly.
 
     ```sh
-    docker build -t getting-started .
+    docker build -t getting-started:v2 .
     ```
 
 3. Start a new container using the new image.
 
     ```sh
-    docker run -d -p 8080:3000 getting-started
+    docker run -d -p 8080:3000 getting-started:v2
     ```
 
     You probably saw an error like this (the IDs will be different):
@@ -164,17 +188,12 @@ To remove a container, you first need to stop it. Once it has stopped, you can r
     docker images
     ```
 
-    You should see the old image of your app represented by the `<none>` placeholder.
+    The output is similar to this:
 
     ```plaintext
-    REPOSITORY        TAG       IMAGE ID       CREATED          SIZE
-    <none>            <none>    c3de9545b495   30 minutes ago   262MB
-    ```
-
-6. Take note of the image ID and remove it.
-
-    ```sh
-    docker rmi <the-image-id>
+    REPOSITORY        TAG       IMAGE ID       CREATED              SIZE
+    getting-started   v2        e50b4d173f3d   About a minute ago   263MB
+    getting-started   v1        9919de806ee7   About a minute ago   263MB
     ```
 
 ## Start the updated app container
@@ -182,7 +201,7 @@ To remove a container, you first need to stop it. Once it has stopped, you can r
 1. Now, start your updated app using the `docker run` command.
 
     ```sh
-    docker run -d -p 8080:3000 getting-started
+    docker run -d -p 8080:3000 getting-started:v2
     ```
 
 2. Refresh your browser on `http://localhost:8080` and you should see your updated help text.

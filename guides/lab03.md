@@ -51,7 +51,7 @@ Open the terminal and run the following commands listed below.
 6. During cluster creation, kubeadm signs the certificate in the `/etc/kubernetes/admin.conf` to have `Subject: O = system:masters, CN = kubernetes-admin`. Copy it in `~/.kube/config`:
 
     ```sh
-    sudo cp /etc/kubernetes/admin.conf ~/.kube/config
+    mkdir ~/.kube && sudo cp /etc/kubernetes/admin.conf ~/.kube/config && sudo chown $USER:$USER ~/.kube/config
     ```
 
 7. Try to run `kubectl get node` again. The output is simlar to this:

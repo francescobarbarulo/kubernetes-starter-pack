@@ -31,6 +31,3 @@ apt-get update
 
 # 2. Install Docker Engine and containerd
 apt-get install -y docker-ce docker-ce-cli containerd.io
-
-# Manage Docker as a non-root user
-usermod -aG docker $USER

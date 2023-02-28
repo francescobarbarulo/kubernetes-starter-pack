@@ -36,9 +36,3 @@ iptables -X
 iptables -P INPUT ACCEPT
 iptables -P FORWARD ACCEPT
 iptables -P OUTPUT ACCEPT
-
-# Remove user from docker group
-deluser $USER docker
-
-# Delete docker group
-delgroup docker

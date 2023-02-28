@@ -7,38 +7,38 @@ docker network ls | awk 'NR>4 {print $1}' | xargs -n 1 docker network rm
 docker images | awk 'NR>1 {print $3}' | xargs -n 1 docker rmi
 
 # Stop the docker.service
-sudo systemctl stop docker.service
+systemctl stop docker.service
 
 # Stop and remove docker socket
-sudo systemctl stop docker.socket
-sudo rm -rf /var/run/docker.sock
+systemctl stop docker.socket
+rm -rf /var/run/docker.sock
 
 # Uninstall docker
-sudo apt-get purge -y docker-ce docker-ce-cli containerd.io
-sudo apt-get autoremove -y
-sudo rm -rf /var/lib/docker
-sudo rm -rf /var/lib/containerd
-sudo rm -rf /etc/docker
-sudo rm -rf /var/run/docker
+apt-get purge -y docker-ce docker-ce-cli containerd.io
+apt-get autoremove -y
+rm -rf /var/lib/docker
+rm -rf /var/lib/containerd
+rm -rf /etc/docker
+rm -rf /var/run/docker
 
 # Delete docker repository
-sudo rm -rf /etc/apt/keyrings/docker.gpg
-sudo rm -rf /etc/apt/sources.list.d/docker.list
+rm -rf /etc/apt/keyrings/docker.gpg
+rm -rf /etc/apt/sources.list.d/docker.list
 
 # Delete bridge
-sudo ip link delete docker0
+ip link delete docker0
 
 # Reset iptables
-sudo iptables -F
-sudo iptables -t nat -F
-sudo iptables -t mangle -F
-sudo iptables -X
-sudo iptables -P INPUT ACCEPT
-sudo iptables -P FORWARD ACCEPT
-sudo iptables -P OUTPUT ACCEPT
+iptables -F
+iptables -t nat -F
+iptables -t mangle -F
+iptables -X
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -P OUTPUT ACCEPT
 
 # Remove user from docker group
-sudo deluser $USER docker
+deluser $USER docker
 
 # Delete docker group
-sudo delgroup docker
+delgroup docker

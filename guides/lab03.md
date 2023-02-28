@@ -46,12 +46,12 @@ Open the terminal and run the following commands listed below.
     ```
 
     This is due to the lack of a kubeconfig file. The `kubectl` command-line tool uses kubeconfig files to find the information it needs to choose a cluster and communicate with the API server of a cluster.
-    By default, `kubectl` looks for the `$HOME/.kube/config` file. You can specify other kubeconfig files by setting the `KUBECONFIG` environment variable. 
+    By default, `kubectl` looks for the `~/.kube/config` file. You can specify other kubeconfig files by setting the `KUBECONFIG` environment variable. 
     
-6. During cluster creation, kubeadm signs the certificate in the `/etc/kubernetes/admin.conf` to have `Subject: O = system:masters, CN = kubernetes-admin`. Set the `KUBECONFIG` environemnt variable:
+6. During cluster creation, kubeadm signs the certificate in the `/etc/kubernetes/admin.conf` to have `Subject: O = system:masters, CN = kubernetes-admin`. Copy it in `~/.kube/config`:
 
     ```sh
-    export KUBECONFIG=/etc/kubernetes/admin.conf
+    sudo cp /etc/kubernetes/admin.conf ~/.kube/config
     ```
 
 7. Try to run `kubectl get node` again. The output is simlar to this:

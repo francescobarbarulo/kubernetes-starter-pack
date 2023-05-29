@@ -71,7 +71,7 @@ Docker provides a containerized local registry that can be started using the `do
 
 Now that you pushed the image on the registry, you can safely remove the image from your machine. This to also reproduce a new instance on which you deploy your containerized application.
 
-1. Get the ID of the container by using the `docker ps` command.
+1. Get the ID of the **getting-started** container by using the `docker ps` command.
 
     ```sh
     docker ps

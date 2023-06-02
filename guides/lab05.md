@@ -14,7 +14,7 @@ So you have pods running the `hello-app` in a flat, cluster wide, address space.
 
 These are problems a Service solves.
 
-1. Create a service for your `hello-app` replicas by exposing the deployment. which forwards every request arriving on port `80` to port `8080` of the endpoints.
+1. Create a service for your `hello-app` replicas by exposing the deployment which forwards every request arriving on port `80` to port `8080` of the endpoints.
 
     ```sh
     kubectl expose deployment hello-app --port 80 --target-port 8080

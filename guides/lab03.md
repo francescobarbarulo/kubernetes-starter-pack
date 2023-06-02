@@ -77,7 +77,7 @@ Open the terminal and run the following commands listed below.
     kubectl get clusterrole cluster-admin -o yaml
     ```
 
-2. Verify the above CluserRole is bound to the `system:masters` group using the built-in `cluster-admin` ClusterRoleBinding.
+2. Verify the above ClusterRole is bound to the `system:masters` group using the built-in `cluster-admin` ClusterRoleBinding.
 
     ```sh
     kubectl get clusterrolebinding cluster-admin -o yaml

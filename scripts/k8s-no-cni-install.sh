@@ -111,7 +111,7 @@ systemctl enable --now kubelet
 # Installing kubectl
 echo "Installing kubectl"
 curl -sLO https://dl.k8s.io/release/v${K8S_VERSION}/bin/linux/${ARCH}/kubectl
-sudo install -m 755 kubectl /usr/local/bin/kubectl
+install -m 755 kubectl /usr/local/bin/kubectl
 rm -f kubectl
 
 

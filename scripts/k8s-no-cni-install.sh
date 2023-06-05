@@ -20,6 +20,7 @@ echo "kubernetes:  $K8S_VERSION"
 
 # Check tar, conntrack and socat are installed
 # Install dependencies for kubeadm tool
+# If you manage to use other Linux distributions you can replace apt-get with their own packege managers
 apt-get update && apt-get install -y tar socat conntrack ca-certificates curl
 
 # Disabling swap

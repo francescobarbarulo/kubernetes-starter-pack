@@ -1,0 +1,40 @@
+config:
+  cloud-init.user-data: |
+    #cloud-config
+    package_upgrade: true
+    packages:
+    - curl
+    - apparmor
+    - apparmor-utils
+    - socat
+    - conntrack
+    - net-tools
+    runcmd:
+    - echo overlay >> /etc/modules
+  limits.cpu: "2"
+  limits.memory: 2GB
+  limits.memory.swap: "false"
+  linux.kernel_modules: ip_tables,ip6_tables,nf_nat,overlay,br_netfilter
+  raw.lxc: |-
+    lxc.apparmor.profile=unconfined
+    lxc.cap.drop=
+    lxc.cgroup.devices.allow=a
+    lxc.mount.auto=proc:rw sys:rw
+    lxc.mount.entry=/dev/kmsg dev/kmsg none defaults,bind,create=file
+  security.nesting: "true"
+  security.privileged: "true"
+description: K8s profile
+devices:
+  eth0:
+    name: eth0
+    network: lxdbr0
+    type: nic
+  kmsg:
+    path: /dev/kmsg
+    source: /dev/kmsg
+    type: unix-char
+  root:
+    path: /
+    pool: default
+    type: disk
+name: k8s

@@ -66,27 +66,3 @@ curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSIO
 mkdir -p /usr/local/lib/systemd/system/kubelet.service.d
 curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" | sed "s:/usr/bin:/usr/local/bin:g" | tee /usr/local/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
 systemctl enable --now kubelet
-
-
-# Init control-plane
-cat <<EOF | tee ~/kubeadm-config.yaml > /dev/null
-kind: InitConfiguration
-apiVersion: kubeadm.k8s.io/v1beta3
-nodeRegistration:
-  name: "cp-01"
-  criSocket: "unix:///run/containerd/containerd.sock"
----
-kind: ClusterConfiguration
-apiVersion: kubeadm.k8s.io/v1beta3
-kubernetesVersion: v$K8S_VERSION
-clusterName: "kubernetes"
-networking:
-  dnsDomain: "cluster.local"
-  serviceSubnet: "10.96.0.0/12"
----
-kind: KubeletConfiguration
-apiVersion: kubelet.config.k8s.io/v1beta1
-cgroupDriver: "systemd"
-EOF
-
-kubeadm init --config ~/kubeadm-config.yaml --ignore-preflight-errors=all >> /var/log/kubeadm-init.log 2>&1

@@ -1,13 +1,10 @@
 #!/bin/sh
 
-K8S_VERSION="1.25.6"
-
 # Init control-plane
 cat <<EOF | tee ~/kubeadm-config.yaml > /dev/null
 kind: InitConfiguration
 apiVersion: kubeadm.k8s.io/v1beta3
 nodeRegistration:
-  name: "cp-01"
   criSocket: "unix:///run/containerd/containerd.sock"
 ---
 kind: ClusterConfiguration

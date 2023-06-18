@@ -1,15 +1,11 @@
 #!/bin/sh
 
+export K8S_VERSION="1.25.6"
+export ARCH="amd64"
+
 RUNC_VERSION="1.1.4"
 CONTAINERD_VERSION="1.6.16"
 CRICTL_VERSION="1.26.0"
-K8S_VERSION="1.25.6"
-
-case $(uname -m) in
-  "x86_64") ARCH="amd64" ;;
-  "aarch64") ARCH="arm64"   ;;
-  *) echo "Architecture not supported"; exit ;;
-esac
 
 echo "arch:        $ARCH"
 echo "runc:        $RUNC_VERSION"

@@ -1,8 +1,5 @@
 #!/bin/sh
 
-export K8S_VERSION="1.25.6"
-export ARCH="amd64"
-
 RUNC_VERSION="1.1.4"
 CONTAINERD_VERSION="1.6.16"
 CRICTL_VERSION="1.26.0"
@@ -24,6 +21,14 @@ curl -sL https://raw.githubusercontent.com/containerd/containerd/main/containerd
 if [ ! -d /etc/containerd ]; then mkdir /etc/containerd; fi
 containerd config default | tee /etc/containerd/config.toml > /dev/null
 sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+### Add insecure registry in containerd config
+# [plugins."io.containerd.grpc.v1.cri".registry]
+#   [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+#     [plugins."io.containerd.grpc.v1.cri".registry.mirrors."<IP>:5000"]
+#       endpoint = ["http://<IP>:5000"]
+#   [plugins."io.containerd.grpc.v1.cri".registry.configs]
+#     [plugins."io.containerd.grpc.v1.cri".registry.configs."<IP>:5000".tls]
+#       insecure_skip_verify = true
 
 systemctl daemon-reload
 systemctl enable --now containerd

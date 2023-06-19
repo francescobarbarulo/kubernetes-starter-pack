@@ -1,4 +1,5 @@
 config:
+  boot.autostart: "true"
   cloud-init.user-data: |
     #cloud-config
     package_upgrade: true
@@ -9,8 +10,9 @@ config:
     - socat
     - conntrack
     - net-tools
-    runcmd:
-    - echo overlay >> /etc/modules
+    - iptables
+    - ebtables
+    - ethtool
   limits.cpu: "2"
   limits.memory: 2GB
   limits.memory.swap: "false"

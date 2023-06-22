@@ -21,4 +21,4 @@ cgroupDriver: "systemd"
 EOF
 
 echo "Init Control Plane"
-kubeadm init --config ~/kubeadm-config.yaml --ignore-preflight-errors=all
+kubeadm init --config ~/kubeadm-config.yaml

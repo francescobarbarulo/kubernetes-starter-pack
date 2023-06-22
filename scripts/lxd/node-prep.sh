@@ -19,16 +19,9 @@ mkdir -p /usr/local/lib/systemd/system
 curl -sL https://raw.githubusercontent.com/containerd/containerd/main/containerd.service | tee /usr/local/lib/systemd/system/containerd.service > /dev/null
 
 if [ ! -d /etc/containerd ]; then mkdir /etc/containerd; fi
-containerd config default | tee /etc/containerd/config.toml > /dev/null
-sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
-### Add insecure registry in containerd config
-# [plugins."io.containerd.grpc.v1.cri".registry]
-#   [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-#     [plugins."io.containerd.grpc.v1.cri".registry.mirrors."<IP>:5000"]
-#       endpoint = ["http://<IP>:5000"]
-#   [plugins."io.containerd.grpc.v1.cri".registry.configs]
-#     [plugins."io.containerd.grpc.v1.cri".registry.configs."<IP>:5000".tls]
-#       insecure_skip_verify = true
+# Set REGISTRY env variable
+curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/containerd/config.toml | tee /etc/containerd/config.toml
+envsubst /etc/containerd/config.toml
 
 systemctl daemon-reload
 systemctl enable --now containerd

@@ -1,74 +1,125 @@
 # Lab 01
 
-In this lab you are going to install the Docker Engine, create and deploy a containerized application.
+In this lab you are going to install the Docker Engine, run some containers based on images publicly available on Docker Hub, and create your own container image.
 
-Open the terminal and run the following commands listed below.
+Open a shell in the `dev` environment.
+You should see something similar to this:
+
+```plaintext
+root@dev:~#
+```
 
 ## Install Docker Engine
 
-1. Get the root privileges and launch the script.
-
-    ```sh
-    sudo su -
-    ```
-
-2. Launch the installation script which will follow the [repository installation method](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
+1. Launch the installation script which will follow the [repository installation method](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
 
     ```sh
     curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/docker-install.sh | sh
     ```
 
-3. Exit the root shell.
+## Run your first container
+
+Now you are ready to run your first container using the Docker CLI.
+
+1. Pull the `hello-world` image from the Docker Hub. Remember that if you do not specify the registry endpoint before the image name, Docker will pull the image from the default registry (`registry-1.docker.io`).
 
     ```sh
-    exit
+    docker pull hello-world
     ```
 
-4. Manage Docker as non-root user by adding the current user to the `docker` group.
+2. Verify the image has been pulled successfully.
+    
+    ```sh
+    docker images
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    REPOSITORY    TAG       IMAGE ID       CREATED       SIZE
+    hello-world   latest    9c7a54a9a43c   6 weeks ago   13.3kB
+    ```
+
+3. Start your first container from the `hello-world` image specifying the container name by using `--name` flag.
 
     ```sh
-    sudo usermod -aG docker $USER
+    docker run --name hello hello-world
     ```
+    > If you do not specify the container name, Docker will randomly assign one.
 
-5. Log out and log back in so that your group membership is re-evaluated.
-
-6. Verify that you can interact with the Docker Engine:
+4. Verify your container is up and running.
 
     ```sh
     docker ps
     ```
-    
+
+    The output shows all running containers. As you see, there are not any containers up and running. This because the `hello` container is not a service that continously run, but it prints a message and exits.
+
+5. You can list all containers, independently of their state, by adding the `-a` flag.
+
+    ```sh
+    docker ps -a
+    ```
+
     The output is similar to this:
 
     ```plaintext
-    CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+    CONTAINER ID   IMAGE         COMMAND    CREATED         STATUS                     PORTS     NAMES
+    5a33397462e6   hello-world   "/hello"   7 minutes ago   Exited (0) 7 minutes ago             hello
     ```
 
-## Explore network interfaces
+    The `hello` container is identified by a container ID (`5a33397462e6`) and is in the `Exited` status.
 
-```sh
-ip addr show
-```
+6. Let's run the `httpd` image that starts an apache HTTP server. You are going to specify the image version by adding the tag (`:2.4`).
 
-You should see a newly `docker0` interface with ip address `172.17.0.1/16` created by Docker. This is the virtual bridge used to forward data traffic to containers attached to it.
+    ```sh
+    docker run --name apache httpd:2.4
+    ```
+    > The `run` command automatically pull the image if it is not found locally. In general, there is no need to pull the image before running the container.
 
-## Explore network routes
+    By default, `docker run` can start the process in the container and attach the console to the process’s standard input, output, and standard error.
+    Usually containers are started in detached mode, so that you can get back the shell.
 
-```sh
-ip route
-```
+7. Terminate the containerized process by pressing `Ctrl+C`.
 
-You should see a newly route created by Docker that states that all traffic directed to subnet `172.17.0.0/16` (where containers will reside by default; Docker daemon acts as a DHCP server) must go to the `docker0` interface.
+8. Start again the apache container, but in the detached mode by adding the `-d` flag.
 
-## Build the app's container image
+    ```sh
+    docker run --name apache -d httpd:2.4
+    ```
 
-1. Clone the app repository and change the directory to the `app` directory:
+    You should see an error like the following:
+
+    ```plaintext
+    docker: Error response from daemon: Conflict. The container name "/apache" is already in use by container "70887675d3d18206298b609d570bff9afaf90462c4ad7dfd7489a2e6e73b0959". You have to remove (or rename) that container to be able to reuse that name.
+    ```
+
+    **Note**: You can not run two containers with the same name.
+
+9. Remove the old exited apache container.
+
+    ```sh
+    docker rm apache
+    ```
+    > You can remove a container by specifiying either the name or the container id.
+
+10. Try to run apache container in detached mode.
+
+    ```sh
+    docker run --name apache -d httpd:2.4
+    ```
+
+## Build you own container image
+
+Assume you have a project codebase hosted on some version control hosting platform like GitHub.
+
+1. Clone the app repository and change the directory to the `app` directory.
 
     ```sh
     git clone https://github.com/docker/getting-started.git && cd getting-started/app
     ```
 
-2. Create a file named `Dockerfile` with some content used to create the image:
+2. Create a file named `Dockerfile` with some content used to create the image. The app is a NodeJS app.
 
     ```sh
     cat <<EOF | tee Dockerfile > /dev/null
@@ -93,7 +144,7 @@ You should see a newly route created by Docker that states that all traffic dire
     
     * The [`EXPOSE`](https://docs.docker.com/engine/reference/builder/#expose) instruction informs Docker that the container listens on the specified network ports at runtime. __The `EXPOSE` instruction does not actually publish the port__. It functions as a type of documentation between the person who builds the image and the person who runs the container, about which ports are intended to be published.
 
-3. Build the container image giving the name `getting-started:v1` starting from the current directory (`.`):
+3. Build the container image giving the name and tag `getting-started:v1` taking in consideration the current directory (`.`).
 
     ```sh
     docker build -t getting-started:v1 .
@@ -105,106 +156,29 @@ You should see a newly route created by Docker that states that all traffic dire
 docker history getting-started:v1
 ```
 
-The output shows all the layers of the image with their sizes.
+The output shows all the layers of the image with their sizes, including the ones belonging to the base image `node:18-alpine`.
 
-## Start an app container
+## Challenge 01
 
-Now that you have an image, you can run the application in a container. To do so, you will use the docker run command.
+Start the application container with name `myapp`, in detached mode, and verify it is up and running.
 
-1. Start your container using the docker run command and specify the name of the image you just created:
+<details>
+  <summary>Solution</summary>
 
-    ```sh
-    docker run -d -p 8080:3000 getting-started:v1
-    ```
+  ```sh
+  docker run -d --name myapp getting-started:v1
+  ```
 
-    You use the `-d` flag to run the new container in "detached" mode (in the background). You also use the `-p` flag to create a mapping between the host’s port `8080` to the container’s port `3000`. Without the port mapping, you wouldn’t be able to access the application even if you specified it in the `Dockerfile`.
+  The output is similar to this:
 
-2. After a few seconds, open your web browser to [`http://localhost:8080`](http://localhost:8080). You should see your app.
+  ```plaintext
+  CONTAINER ID   IMAGE                COMMAND                  CREATED         STATUS         PORTS      NAMES
+  bb9c561081a8   getting-started:v1   "docker-entrypoint.s…"   4 seconds ago   Up 3 seconds   3000/tcp   myapp
+  d082554ae65f   httpd:2.4            "httpd-foreground"       2 days ago      Up 3 minutes   80/tcp     apache
+  ```
 
-3. Go ahead and add an item or two and see that it works as you expect. You can mark items as complete and remove items. Your frontend is successfully storing items in the backend.
-
-At this point, you should have a running todo list manager with a few items, all built by you.
-
-## Update the source code
-
-1. In the `src/static/js/app.js` file, update line 56 to use the new empty text:
-
-    ```sh
-    sed -i 's/No items yet! Add one above!/You have no todo items yet! Add one above!/' src/static/js/app.js
-    ```
-
-2. Build the updated version of the image with the `v2` tag using `docker build` command you used previosuly.
-
-    ```sh
-    docker build -t getting-started:v2 .
-    ```
-
-3. Start a new container using the new image.
-
-    ```sh
-    docker run -d -p 8080:3000 getting-started:v2
-    ```
-
-    You probably saw an error like this (the IDs will be different):
-
-    ```plaintext
-    docker: Error response from daemon: driver failed programming external connectivity on endpoint laughing_burnell 
-    (bb242b2ca4d67eba76e79474fb36bb5125708ebdabd7f45c8eaf16caaabde9dd): Bind for 0.0.0.0:3000 failed: port is already allocated.
-    ```
-
-    The error occurred because you aren’t able to start the new container while your old container is still running. The reason is that the old container is already using the host’s port `8080` and only one process on the machine (containers included) can listen to a specific port. To fix this, you need to remove the old container.
-
-## Remove the old container
-
-To remove a container, you first need to stop it. Once it has stopped, you can remove it.
-
-1. Get the ID of the container by using the `docker ps` command.
-
-    ```sh
-    docker ps
-    ```
-
-2. Use the `docker stop` command to stop the container. Replace <the-container-id> with the ID from `docker ps`.
-
-    ```sh
-    docker stop <the-container-id>
-    ```
-
-3. You can show the stopped container by typing `docker ps -a`. You should see two stopped containers, the one stopped at step 2 and the one exited because of the port binding error.
-
-4. Once the container is stopped, you can remove it by using the `docker rm` command.
-
-    ```sh
-    docker rm <the-container-id>
-    ```
-
-    **Remove both the stopped containers**.
-
-    > 💡 You can stop and remove a container in a single command by adding the `force` flag to the `docker rm` command. For example: `docker rm -f <the-container-id>`.
-
-5. You removed the old container, but the image from which it was originated is still present on the machine. List all the images. 
-
-    ```sh
-    docker images
-    ```
-
-    The output is similar to this:
-
-    ```plaintext
-    REPOSITORY        TAG       IMAGE ID       CREATED              SIZE
-    getting-started   v2        e50b4d173f3d   About a minute ago   263MB
-    getting-started   v1        9919de806ee7   About a minute ago   263MB
-    ```
-
-## Start the updated app container
-
-1. Now, start your updated app using the `docker run` command.
-
-    ```sh
-    docker run -d -p 8080:3000 getting-started:v2
-    ```
-
-2. Refresh your browser on `http://localhost:8080` and you should see your updated help text.
+  At the moment you are not able to access the appication from the browser outside the environment.
+</details>
 
 ## Next
 

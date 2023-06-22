@@ -1,151 +1,90 @@
 # Lab 03
 
-In this lab you are going to install Kubernetes as all-in-one single-node deployment and access it.
+In this lab you are going to deploy a private container registry used to store your container images.
 
-Open the terminal and run the following commands listed below.
+Open a shell in the `registry` environment.
+You should see something similar to this:
 
-## Install Kubernetes
+```plaintext
+root@registry:~#
+```
 
-1. Get the root privileges and launch the script.
+## Deploy the registry server
 
+Docker provides a containerized local registry that can be started using the `docker run` command. You will also configure the registry server by providing native basic authentication.
+
+1. Create a password file tool with one entry for the user `testuser`, with password `testpassword`, using the `htpasswd` tool provided in the `httpd` image:
     ```sh
-    sudo su -
+    cd && mkdir auth && docker run \
+    --entrypoint htpasswd \
+    httpd:2 -Bbn testuser testpassword > auth/htpasswd
     ```
 
-2. Install an all-in-one single control-plane Kubernetes cluster.
+2. Start the registry with basic authentication:
     ```sh
-    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/k8s-no-cni-install.sh | sh
+    docker run -d \
+    -p 5000:5000 \
+    --name registry \
+    -v $PWD/auth:/auth \
+    -e "REGISTRY_AUTH=htpasswd" \
+    -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+    -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \
+    registry:2
     ```
 
-    The script prepares the host by installing and configuring prerequisites (e.g. enabling IPv4 forwarding and letting iptables see bridged traffic), a container runtime (`containerd` and `runc`), `kubeadm`, `kubelet` and `kubectl`.
-    Then it lanches the `kubeadm init` command to bootstrap the control-plane Kubernetes node.
+3. After a few seconds, open your web browser at `http://<registry>:5000/v2/_catalog`. Use the above credentials when requested. You should see an empty json response `{"repositories":[]}`.
 
-3. Exit the root shell.
+4. Exit the `registry` environment.
 
+## Push the image to the registry
+
+Once you built the app container image, you are ready to push it to your container registry.
+
+Open a shell in the `dev` environment.
+You should see something similar to this:
+
+```plaintext
+root@dev:~#
+```
+
+1. Try running the push command:
     ```sh
-    exit
+    docker push getting-started:v2
     ```
 
-4. Enable kubectl shell autompletion in the current session.
-
-    ```sh
-    kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
-    source ~/.bashrc
-    ```
-
-5. Once the installation is completed, you can connect to the API server and check the nodes status.
-
-    ```sh
-    kubectl get node
-    ```
-
-    You should see the following message:
+    You probably saw an error like this:
 
     ```plaintext
-    The connection to the server localhost:8080 was refused - did you specify the right host or port?
+    The push refers to repository [docker.io/library/getting-started]
+    denied: requested access to the resource is denied
     ```
 
-    This is due to the lack of a kubeconfig file. The `kubectl` command-line tool uses kubeconfig files to find the information it needs to choose a cluster and communicate with the API server of a cluster.
-    By default, `kubectl` looks for the `~/.kube/config` file. You can specify other kubeconfig files by setting the `KUBECONFIG` environment variable. 
-    
-6. During cluster creation, kubeadm signs the certificate in the `/etc/kubernetes/admin.conf` to have `Subject: O = system:masters, CN = kubernetes-admin`. Copy it in `~/.kube/config`:
+    The error occurred because the `docker push` command uses the Docker's public registry if it is not specified in the image name.
+
+2. Use the `docker tag` command to give the `getting-started` image a new name, including the registry hostname. If you don't specify a tag, Docker will use a tag called `latest`.
 
     ```sh
-    mkdir ~/.kube && sudo cp /etc/kubernetes/admin.conf ~/.kube/config && sudo chown $USER:$USER ~/.kube/config
+    docker tag getting-started:v2 <dev>:5000/getting-started:v2
     ```
 
-7. Try to run `kubectl get node` again. The output is simlar to this:
-
-    ```plaintext
-    NAME    STATUS     ROLES           AGE   VERSION
-    cp-01   NotReady   control-plane   30s   v1.25.6
-    ```
-
-    As you can see, the node is in the `NotReady` status. From the end of the `kubeadm init` output you may have seen the statement:
-
-    ```plaintext
-    You should now deploy a pod network to the cluster
-    ```
-
-## Generate a kubeconfig file for admin access within the default namespace
-
- The `admin.conf` kubeconfig file uses a signed certificate for `Subject: O = system:masters, CN = kubernetes-admin`. Kubernetes come with a ClusterRoleBinding named `cluster-admin` that binds the `cluster-admin` ClusterRole with the `system:masters` group. 
-
- 1. Let's inspect the built-in `cluster-admin` ClusterRole.
+3. Before pushing the renamed image, login to the local registry using `testpassword` as password when prompted.
 
     ```sh
-    kubectl get clusterrole cluster-admin -o yaml
+    docker login <dev>:5000 -u testuser
     ```
 
-2. Verify the above ClusterRole is bound to the `system:masters` group using the built-in `cluster-admin` ClusterRoleBinding.
+4. Now try to push again.
 
     ```sh
-    kubectl get clusterrolebinding cluster-admin -o yaml
+    docker push <dev>:5000/getting-started:v2
     ```
 
- 3. `system:masters` is a break-glass, super user group that bypasses the authorization layer (e.g. RBAC). Sharing the `admin.conf` with additional users is **not recommended**! Instead, you can use the `kubeadm kubeconfig user` command to generate kubeconfig files for additional users. Kubernetes comes with other ClusterRoles, including the `admin` one, which allows admin access. This role is intended to be granted within a namespace using a **RoleBinding**. View the `admin` ClusterRole.
+5. Check the image is present on the registry by refreshing the web browser at `http://<dev>:5000/v2/_catalog`. You should see a json response like this:
 
-    ```sh
-    kubectl get clusterrole admin -o yaml
-    ```
- 
- 4. Let's bind the `admin` ClusterRole to the group `admin` creating a RoleBinding.
-
-    ```sh
-    kubectl create rolebinding admin --clusterrole=admin --group=admin
+    ```json
+    {"repositories":["getting-started"]}
     ```
 
-    **Note**: This RoleBinding will be created in the `default` namespace. Thus, user belonging to `admin` group will have admin access only to the `default` namespace.
-
-4. Create a kubeconfig file for user `ksp-user` belonging to the `admin` group.
-
-    ```sh
-    kubectl get cm kubeadm-config -n kube-system -o=jsonpath="{.data.ClusterConfiguration}" > ClusterConfiguration.yaml \
-    && sudo kubeadm kubeconfig user --config ClusterConfiguration.yaml --org admin --client-name ksp-user > ksp-user-config.yaml
-    ```
-
-5. Set the `KUBECONFIG` environment variable to the just created kubeconfig file.
-
-    ```sh
-    export KUBECONFIG=$PWD/ksp-user-config.yaml
-    ```
-
-6. View the generated kubeconfig file.
-
-    ```sh
-    kubectl config view
-    ```
-
-7. Verify you can create namespaced resources (e.g. Roles):
-
-    ```sh
-    kubectl auth can-i create roles
-    ```
-
-    The output is similar to this:
-
-    ```plaintext
-    yes
-    ```
-
-    But you can not list cluster scoped resources (e.g. Nodes):
-
-    ```sh
-    kubectl auth can-i get nodes
-    ```
-  
-    The output is similar to this:
-
-    ```plaintext
-    Warning: resource 'nodes' is not namespace scoped
-    no
-    ```
-
-8. Unset the `KUBECONFIG` environment variable.
-
-    ```sh
-    unset KUBECONFIG
-    ```
 
 ## Next
 

@@ -1,103 +1,84 @@
 # Lab 02
 
-In this lab you are going to push the container image to a private registry deployed as containerized service on your host.
-Then you will pull and run your container image exploiting volumes to persist the todo list upon container restart.
-Finally you will use a mysql database to store the todo items and you will connect to it from the application using a docker network.
+In this lab you are going to expose your application to be reachable outside the environment.
+Then you will create and attach a volume to the database container to persist the todo list upon the container restarts.
+Finally you will connect it to a containerized mysql database used to store the todo items.
 
-Open the terminal and run the following commands listed below.
+Open a shell in the `dev` environment.
+You should see something similar to this:
 
-## Deploy the registry server
+```plaintext
+root@dev:~#
+```
 
-Docker provides a containerized local registry that can be started using the `docker run` command. You will also configure the registry server by providing native basic authentication.
+## Expose the application
 
-1. Create a password file with one entry for the user `testuser`, with password `testpassword`:
+1. Start the application container called `myapp-internal`, but this time adding the `-p` flag. The *publish* flag is used to create a mapping between the host's port `8080` to the container's port `3000`. Without the port mapping, you wouldn't be able to access the application even if you specified it in the `Dockerfile` with the `EXPOSE` instruction which only functions as a type of documentation between the person who builds the image and the person who runs the container, about which ports are intended to be published.
+
     ```sh
-    cd && mkdir auth && docker run \
-    --entrypoint htpasswd \
-    httpd:2 -Bbn testuser testpassword > auth/htpasswd
+    docker run --name myapp-internal -d -p 8080:3000 getting-started:v1
+    ```  
+
+2. After a few seconds, open the web browser to `http://<dev>:8080` and you should see your app.
+    
+    **Tip**: Open another terminal window and run `lxc list`.
+
+3. In the application add an item or two and see that it works as you expect. You can mark items as complete and remove items. Your frontend is successfully storing items in the backend.
+
+## Update the source code
+
+Make sure you came back to the `dev` environment (`root@dev`).
+
+1. In the `src/static/js/app.js` file, update line 56 to use the new empty text:
+
+    ```sh
+    sed -i 's/No items yet! Add one above!/You have no todo items yet! Add one above!/' src/static/js/app.js
     ```
 
-2. Start the registry with basic authentication:
+2. Build the updated version of the image with the `v2` tag using `docker build` command you used previosuly.
+
     ```sh
-    docker run -d \
-    -p 5000:5000 \
-    --name registry \
-    -v $PWD/auth:/auth \
-    -e "REGISTRY_AUTH=htpasswd" \
-    -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
-    -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \
-    registry:2
+    docker build -t getting-started:v2 .
     ```
 
-3. After a few seconds, open your web browser at [`http://localhost:5000/v2/_catalog`](http://localhost:5000/v2/_catalog). Use the above credentials when requested. You should see an empty json response `{"repositories":[]}`.
+3. Start a new container using the new image.
 
-## Push the image
-
-1. In the command line, try running the push command:
     ```sh
-    docker push getting-started:v2
+    docker run -d -p 8080:3000 getting-started:v2
     ```
 
-    You probably saw an error like this:
+    You probably saw an error like this (the IDs will be different):
 
     ```plaintext
-    The push refers to repository [docker.io/library/getting-started]
-    denied: requested access to the resource is denied
+    docker: Error response from daemon: driver failed programming external connectivity on endpoint laughing_burnell 
+    (bb242b2ca4d67eba76e79474fb36bb5125708ebdabd7f45c8eaf16caaabde9dd): Bind for 0.0.0.0:3000 failed: port is already allocated.
     ```
 
-    The error occurred because the `docker push` command uses the Docker's public registry if it is not specified in the image name.
+    The error occurred because you aren’t able to start the new container while your old container is still running. The reason is that the old container is already using the host’s port `8080` and only one process on the machine (containers included) can listen to a specific port. To fix this, you need to remove the old container.
 
-2. Use the `docker tag` command to give the `getting-started` image a new name, including the registry hostname. If you don't specify a tag, Docker will use a tag called `latest`.
+## Challenge 02
 
-    ```sh
-    docker tag getting-started:v2 localhost:5000/getting-started:v2
-    ```
+Stop and remove the old container, start again the new one with port mapping and name `myapp-external`, and verify it is up and running.
 
-3. Before pushing the renamed image, login to the local registry using `testpassword` as password when prompted.
+<details>
+  <summary>Solution</summary>
 
-    ```sh
-    docker login localhost:5000 -u testuser
-    ```
+  1. Remove the `myapp-internal` container.
 
-4. Now try to push again.
+        ```sh
+        docker stop myapp-internal
+        docker rm myapp-internal
+        ```
 
-    ```sh
-    docker push localhost:5000/getting-started:v2
-    ```
+        > A container can be removed only if it is previously stopped. You can use `docker rm -f <container-id>` to force the deletion even if the container is running.
 
-5. Check the image is present on the registry by refreshing the web browser at [`http://localhost:5000/v2/_catalog`](http://localhost:5000/v2/_catalog). You should see a json response like this: `{"repositories":["getting-started"]}`. 
+  2. Start the new container.
 
-## Run the image pulled from the local registry
+        ```sh
+        docker run --name myapp-external -d -p 8080:3000 getting-started:v2
+        ```
 
-Now that you pushed the image on the registry, you can safely remove the image from your machine. This to also reproduce a new instance on which you deploy your containerized application.
-
-1. Get the ID of the **getting-started** container by using the `docker ps` command.
-
-    ```sh
-    docker ps
-    ```
-
-2. Use the `docker rm` command to stop and remove the container. Replace <the-container-id> with the ID from `docker ps`.
-
-    ```sh
-    docker rm -f <the-container-id>
-    ```
-
-3. Use the `docker rmi`command to remove all the images:
-
-    ```sh
-    docker rmi localhost:5000/getting-started:v2 getting-started:v2 getting-started:v1
-    ```
-
-4. Now that the `getting-started` image is not present on your machine, you need to pull it from the local registry. This is done automatically with the `docker run` command:
-
-    ```sh
-    docker run -d -p 8080:3000 localhost:5000/getting-started:v2
-    ```
-
-    You should see the image get pulled down and eventually start up!
-
-5. Reopen your web browser to [`http://localhost:8080`](http://localhost:8080) and check if it works.
+</details>
 
 ## Persist the todo data
 
@@ -118,23 +99,25 @@ As mentioned, you are going to use a named volume. Think of a named volume as si
     docker volume create todo-db
     ```
 
-2. Stop and remove the todo app container once again with `docker rm -f <id>`, as it is still running without using the persistent volume.
+2. Stop and remove the todo app container once again as it is still running without using the persistent volume.
+
+    ```sh
+    docker rm -f myapp-external
+    ```
 
 3. Start the todo app container, but add the `-v` flag to specify a volume mount. You will use the named volume and mount it to `/etc/todos`, which will capture all files created at the path.
 
     ```sh
-    docker run -d -p 8080:3000 -v todo-db:/etc/todos localhost:5000/getting-started:v2
+    docker run --name myapp-external -d -p 8080:3000 -v todo-db:/etc/todos getting-started:v2
     ```
 
 4. Once the container starts up, open the app and add a few items to your todo list.
 
-5. Stop and remove the container for the todo app. Use `docker ps` to get the ID and then `docker rm -f <id>` to remove it.
+5. Stop and remove the container for the todo app.
 
-6. Start a new container using the same command from above.
+6. Start a new container using the same command from above. What do you expect? Open the app and you should see your items still in your list!
 
-7. Open the app. You should see your items still in your list!
-
-8. Go ahead and remove the container when you’re done checking out your list.
+7. Go ahead and remove the container when you’re done checking out your list.
 
 Hooray! You’ve now learned how to persist data!
 
@@ -226,7 +209,7 @@ The todo app supports the setting of a few environment variables to specify MySQ
 
 Let's connect the todo app to MySQL.
 
-1. You'll specify each of the environment variables above, as well as connect the container to our app network.
+1. You'll specify each of the environment variables above with the `-e` flag, as well as connect the container to the app network.
 
     ```sh
     docker run -d -p 8080:3000 \
@@ -268,35 +251,6 @@ Let's connect the todo app to MySQL.
     ```mysql
     exit
     ```
-
-## Clean up
-
-1. Get the root privileges and launch the script.
-
-    ```sh
-    sudo su -
-    ```
-
-2. Uninstall docker:
-
-    ```sh
-    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/docker-uninstall.sh | sh
-    ```
-
-3. Exit the root shell.
-
-    ```sh
-    exit
-    ```
-
-4. Remove the current user from docker group and delete the docker group.
-
-    ```sh
-    sudo deluser $USER docker
-    ```
-
-5. Log out and log back in so that your group membership is re-evaluated.
-
 
 ## Next
 

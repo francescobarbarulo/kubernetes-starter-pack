@@ -37,6 +37,7 @@ Open a shell on the `student` machine.
     ```
 
     This will create a Service which targets TCP port `8080` on any Pod with the `app: hello-app` label, and expose it on an the Service TCP port `80`.
+    Being a Service of type `ClusterIP` (default if `type` is not specified), it is only usable inside the cluster.
 
 2. Check the Service:
 
@@ -50,13 +51,6 @@ Open a shell on the `student` machine.
 
     ```sh
     kubectl describe service hello-app
-    ```
-
-4. You should now be able to curl the nginx Service on `<CLUSTER-IP>:<PORT>` from any node in your cluster.
-
-    ```sh
-    CLUSTER_IP=$(kubectl get services hello-app -o jsonpath='{.spec.clusterIP}')
-    curl http://$CLUSTER_IP:80
     ```
 
 <!-- ## Service Routing
@@ -95,6 +89,8 @@ Kubernetes offers a DNS cluster addon Service that automatically assigns dns nam
     ```sh
     nslookup hello-app
     ```
+
+    **Note**: The resolved IP address is the same as the one printed by `kubectl get services`.
 
 3. Test the random load balancer mechanism implemented by the Service. Run multiple times the command below and verify you get replies from different Pods.
 
@@ -151,18 +147,19 @@ Often front-end applications need to be reached from the outside world. The very
     
     **Note**: The port number may differ from yours. 
 
-5. Take note of the exposed port and verify the endpoints include the IP addresses of the Pods listed at step 2.
+5. Take note of the exposed port and the worker node IP address.
 
     ```sh
     NODE_PORT=$(kubectl get services/hello-app -o jsonpath={.spec.ports[0].nodePort})
-    kubectl describe service hello-app
+    WORKER_NODE_IP=<k8s-w-01-ip>
     ```
 
-6. Use curl to make an HTTP request, this time from outside the cluster using the IP address and port of the host.
+    Try to use the IP address of the control-plane node. What do you expect? Yes, it works. When a Service of type `NodePort` is created, Kubernetes bind the Service port to every node of the cluster.
+
+6. Use curl to make an HTTP request specifying the IP address and port of the worker node.
 
     ```sh
-    HOST_IP=$(hostname -I | awk '{print $1}')
-    curl http://$HOST_IP:$NODE_PORT
+    curl http://$WORKER_NODE_IP:$NODE_PORT
     ```
 
     Hooray! The application is now reachable from the world.
@@ -295,7 +292,7 @@ Now you are going to create two Deployments of different versions of the same ap
 
     ```sh
     IC_NODE_PORT=$(kubectl get service ingress-nginx-controller -n ingress-nginx -o jsonpath={.spec.ports[0].nodePort})
-    curl http://$HOST_IP:$IC_NODE_PORT/v1
+    curl http://$WORKER_NODE_IP:$IC_NODE_PORT/v1
     ```
 
     The output is similar to this:
@@ -309,7 +306,7 @@ Now you are going to create two Deployments of different versions of the same ap
     Try to use the `/v2` path.
 
     ```sh
-    curl http://$HOST_IP:$IC_NODE_PORT/v2
+    curl http://$WORKER_NODE_IP:$IC_NODE_PORT/v2
     ```
 
     The output is similar to this:

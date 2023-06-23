@@ -7,7 +7,7 @@ On top of it you will find four different isolated environments:
 |---|---|---|
 | `dev` | `root@dev` | Developer laptop |
 | `registry` | `root@registry` | Private image registry host |
-| `k8s-cp-01` | `root@k8s-cp-01` | Kubernetes control plane node |
+| `k8s-cp-01` | `root@k8s-cp-01` | Kubernetes control-plane node |
 | `k8s-w-01` | `root@k8s-w-01` | Kubernetes worker node |
 
 These environments are provided by means of Linux Containers (LXC). Nevertheless you can think of them as physical or virtual machines.

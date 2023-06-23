@@ -72,7 +72,7 @@ Like the control-plane node, the new worker node must be prepared installing and
 
 4. Join the worker node to the exsisting cluster by running the `kubeadm join` command printed at step 1.
 
-Open a shell to the `student` machine.
+Open a shell on the `student` machine.
 
 1. Verify the the newly joined worker node is in `Ready` state.
 
@@ -102,40 +102,14 @@ Open a shell on the `student` machine.
     kubectl get deployments
     ```
 
-    You should see `0/1` in the `READY` column. It represents the ratio of `CURRENT/DESIRED` replicas. This means that the pod seems not to come up. Let's invenstigate more.
-
-3. List Pods and take note of the pod name.
-
-    ```sh
-    kubectl get pods
-    POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
-    ```
-
-4. Inspect the Pod to get more details.
-
-    ```sh
-    kubectl describe pod $POD_NAME
-    ```
-
-    You should see an error like the following:
+    The output is similar to this:
 
     ```plaintext
-    Type     Reason            Age    From               Message
-    ----     ------            ----   ----               -------
-    Warning  FailedScheduling  2m49s  default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint {node-role.kubernetes.io/control-plane: }. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+    NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+    hello-app   1/1     1            1           12s
     ```
 
-    This means that the scheduler did not find any available nodes since the only node in the cluster belongs to the control plane. By default, Kubernetes prevents scheduling to control plane nodes by tainting them with `node-role.kubernetes.io/control-plane:NoSchedule`.
-
-5. Untaint the node to allow scheduling on the control plane node.
-
-    ```sh
-    kubectl taint node --all node-role.kubernetes.io/control-plane-
-    ```
-
-6. Now the deployment should be ready. If not, delete (`kubectl delete deployment hello-app`) and recreate it.
-
-7. Run the following command to see the ReplicaSet created by the Deployment.
+3. Run the following command to see the ReplicaSet created by the Deployment.
 
     ```sh
     kubectl get replicasets
@@ -150,21 +124,22 @@ Open a shell on the `student` machine.
 
     **Note**: The name of the ReplicaSet is always formatted as `[DEPLOYMENT-NAME]-[HASH]`. This name will become the basis for the Pods which are created.
 
-8. The Deployment automatically generates labels for each Pod in order to use them in the selctor. Run the following to see the Pod's labels.
+4. The Deployment automatically generates labels for each Pod in order to use them in the selctor. Run the following to see the Pod's labels.
 
     ```sh
     kubectl get pods --show-labels
     ```
 
-9. If you try to delete a Pod belonging to a Deployment, the ReplicaSet controller will recreate a new one.
+5. If you try to delete a Pod belonging to a Deployment, the ReplicaSet controller will recreate a new one.
 
     ```sh
+    POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
     kubectl delete pod $POD_NAME
     ```
 
     **Note**: The Pod name is changed.
 
-10. Anything that the application would normally send to `STDOUT` becomes logs for the container within the Pod. Retrieve these logs to verify the server is up:
+6. Anything that the application would normally send to `STDOUT` becomes logs for the container within the Pod. Retrieve these logs to verify the server is up:
 
     ```sh
     POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
@@ -177,7 +152,7 @@ Open a shell on the `student` machine.
     1970/01/01 16:20:52 Server listening on port 8080
     ```
 
-    **Note**: You don't need to specify the container name, because you only have one container inside the pod.
+    > You don't need to specify the container name, because you only have one container inside the pod.
 
 ## Scaling the deployment
 

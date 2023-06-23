@@ -20,8 +20,7 @@ curl -sL https://raw.githubusercontent.com/containerd/containerd/main/containerd
 
 if [ ! -d /etc/containerd ]; then mkdir /etc/containerd; fi
 # Set REGISTRY env variable
-curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/containerd/config.toml | tee /etc/containerd/config.toml
-envsubst /etc/containerd/config.toml
+curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/containerd/config.toml | envsubst | tee /etc/containerd/config.toml > /dev/null
 
 systemctl daemon-reload
 systemctl enable --now containerd

@@ -1,224 +1,288 @@
 # Lab 07
 
-In this lab you are going to deploy a Wordpress application with a MySQL database. Both applications use PersistentVolumes and PersistentVolumeClaims to store data.
+In this lab you are going to perisist data in Kubernetes using PersistenVolumes (PVs), PersistentVolumeClaims (PVCs) and StorageClasses (SCs).
 
-## Deploy the MySQL database
+## Install the hostpath CSI driver
 
-1. Create a secret to store credentials to access the mysql.
+As you did with the CNI plugin, you need to let Kubernetes be able to interact with a storage via a CSI driver. In this lab you are going to use the hostpath CSI driver which provides persistent storage backed by the host filesystem.
+
+Open a shell on the `student` machine.
+
+1. Install the CSI driver with the required RBAC rules in the `csi` namespace:
 
     ```sh
-    kubectl create secret generic mysql-creds --from-literal=user=wordpress --from-literal=password=secret123 --from-literal=db=wordpress
+    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/csi-hostpath-install.sh | sh
     ```
 
-2. Create a Service resource for the database instance. Since the database is a stateful application it recommended to use a headless service.
+2. The manifest applied above has deployed the CSI driver as StatefulSet. Verify it is up and running.
+
+    ```sh
+    kubectl get statefulsets
+    ```
+
+    Show also the pods.
+
+    ```sh
+    kubectl get pods
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    NAME                   READY   STATUS    RESTARTS   AGE
+    csi-hostpathplugin-0   8/8     Running   0          54s
+    ```
+
+3. Inspect the Pod to see the containers inside it.
+
+    ```sh
+    kubectl describe pod csi-hostpathplugin-0
+    ```
+
+    The first container you see is the `hostpath` one which implements all functions to communicate to the backed storage.
+
+    It comes with a bunch of CSI sidecar containers that aim to simplify the development and deployment of CSI Drivers on Kubernetes: 
+
+    * `csi-external-health-monitor-controller` checks the health condition of the CSI volumes.
+    * `node-driver-registrar` registers the CSI driver with Kubelet so that it knows which Unix domain socket to issue the CSI calls on.
+    * `liveness-probe` exposes an HTTP `/healthz` endpoint, which serves as kubelet's livenessProbe hook to monitor health of a CSI driver.
+    * `csi-attacher` attaches volumes to nodes by calling `ControllerPublish` and `ControllerUnpublish` functions of CSI drivers.
+    * `csi-provisioner` dynamically provisions volumes by calling `CreateVolume` and `DeleteVolume` functions of CSI drivers.
+    * `csi-resizer` watches the Kubernetes API server for PersistentVolumeClaim updates and triggers `ControllerExpandVolume` operations against a CSI endpoint if user requested more storage on PersistentVolumeClaim object.
+    * `csi-snapshotter` watches for `VolumeSnapshotContent` create/update/delete events to perform snapshots of PersistenVolumes.
+
+4. Kubernetes API make available a `CSIDriver` resource to (i) ease the discovery of CSI Drivers installed on the cluster; (ii) specify how Kubernetes should interact with the CSI driver. List the CSI drivers.
+
+    ```sh
+    kubectl get CSIDriver
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    NAME                  ATTACHREQUIRED   PODINFOONMOUNT   STORAGECAPACITY   TOKENREQUESTS   REQUIRESREPUBLISH   MODES                  AGE
+    hostpath.csi.k8s.io   true             true             false             <unset>         false               Persistent,Ephemeral   45m
+    ```
+
+## Enable dynamic volume provisionig
+
+A cluster administrator can define as many `StorageClass` objects as needed, each specifying a _volume plugin_ (aka `provisioner`) that provisions a volume and the set of parameters to pass to that provisioner when provisioning. A cluster administrator can define and expose multiple flavors of storage (from the same or different storage systems) within a cluster, each with a custom set of parameters. This design also ensures that end users don't have to worry about the complexity and nuances of how storage is provisioned, but still have the ability to select from multiple storage options.
+
+1. Create a StorageClass which refers to the `hostpath.csi.k8s.io` provisioner:
 
     ```sh
     echo '
-    apiVersion: v1
-    kind: Service
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
     metadata:
-      name: mysql
-      labels:
-        app: wordpress
-    spec:
-      clusterIP: None # headless
-      selector:
-        app: wordpress
-        tier: mysql
-      ports:
-      - name: mysql
-        port: 3306
+      name: csi-hostpath-sc
+    provisioner: hostpath.csi.k8s.io
+    reclaimPolicy: Delete
+    volumeBindingMode: Immediate
+    allowVolumeExpansion: true
     ' | kubectl apply -f -
     ```
 
-3. Create the `mysql` StatefulSet setting the required `MYSQL_ROOT_PASSWORD` environment variable using the secret created ast step 1.
+2. Verify the StorageClass has been created
 
     ```sh
-    echo '
-    apiVersion: apps/v1
-    kind: StatefulSet
-    metadata:
-      name: mysql
-      labels:
-        app: wordpress
-    spec:
-      serviceName: mysql # must match the mysql Service name
-      replicas: 1
-      selector:
-        matchLabels:
-          app: wordpress
-          tier: mysql
-      template:
-        metadata:
-          labels:
-            app: wordpress
-            tier: mysql
-        spec:
-          containers:
-          - name: mysql
-            image: mysql:5.7
-            env:
-            - name: MYSQL_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-creds
-                  key: db
-            - name: MYSQL_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-creds
-                  key: user
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-creds
-                  key: password
-            - name: MYSQL_RANDOM_ROOT_PASSWORD
-              value: "1"
-            ports:
-            - name: mysql
-              containerPort: 3306
-            volumeMounts:
-            - name: data
-              mountPath: /var/lib/mysql
-      volumeClaimTemplates:
-      - metadata:
-          name: data
-        spec:
-          accessModes: [ "ReadWriteOnce" ]
-          resources:
-            requests:
-              storage: 5Gi
-    ' | kubectl apply -f -
+    kubectl get storageclasses
     ```
 
-## Deploy Wordpress application
+    The output is similar to this:
 
-1. Create a PVC for Wordpress configuration data.
+    ```plaintext
+    NAME              PROVISIONER           RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+    csi-hostpath-sc   hostpath.csi.k8s.io   Delete          Immediate           true                   9s
+    ```
+
+3. An administrator can mark a specific `StorageClass` as default by adding the `storageclass.kubernetes.io/is-default-class` annotation to it. When a default `StorageClass` exists in a cluster and a user creates a `PersistentVolumeClaim` with `storageClassName` unspecified, the `DefaultStorageClass` admission controller automatically adds the `storageClassName` field pointing to the default storage class.
+Mark the `csi-hostpath-sc` StorageClass as _default_.
+
+    ```sh
+    kubectl annotate storageclass csi-hostpath-sc storageclass.kubernetes.io/is-default-class=true 
+    ```
+
+4. Now if you show the `csi-hostpath-sc` Storage Class you should see the `(default)` annotation.
+
+    ```sh
+    kubectl get storageclass csi-hostpath-sc
+    ```
+
+## Using dynamic provisioning
+
+Users request dynamically provisioned storage by including a storage class in their `PersistentVolumeClaim`.
+
+1. Create a claim that uses the `csi-hostpath-sc` StorageClass.
 
     ```sh
     echo '
     apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
-      name: wordpress-data
-      labels:
-        app: wordpress
+      name: csi-pvc
     spec:
       accessModes:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 5Gi
+          storage: 1Gi
+      storageClassName: csi-hostpath-sc # can be omitted (default class)
     ' | kubectl apply -f -
     ```
 
-    Verify the PVC has successfully created by `kubectl get pvc`.
-
-2. Create a Deployment for Wordpress application with a Persistent Volume Claim reference to `wordpress-data`.
+2. Verify the PV has been automatically created and successfully bound to the PVC.
 
     ```sh
-    echo '
+    kubectl get persistentvolumes
+    ```
+
+    The output is similar to this:
+
+    ```sh
+    NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM             STORAGECLASS      REASON   AGE
+    pvc-40a54e68-3321-4686-864a-90fbeb0f6067   1Gi        RWO            Delete           Bound    default/csi-pvc   csi-hostpath-sc            4s
+    ```
+
+    To list the PVC run the following command.
+
+    ```sh
+    kubectl get persistentvolumeclaims
+    ```
+
+## Claims as volumes
+
+1. Create a Deployment with a Pod using the claim as a volume.
+
+    ```sh
+    cat <<EOF | tee csi-app.yaml > /dev/null
     apiVersion: apps/v1
     kind: Deployment
     metadata:
-      name: wordpress
-      labels:
-        app: wordpress
+      name: csi-app
     spec:
+      replicas: 1
       selector:
         matchLabels:
-          app: wordpress
-          tier: frontend
-      strategy:
-        type: Recreate
+          app: csi-app
       template:
         metadata:
           labels:
-            app: wordpress
-            tier: frontend
+            app: csi-app
         spec:
           containers:
-          - image: wordpress:6.1
-            name: wordpress
-            env:
-            - name: WORDPRESS_DB_HOST
-              value: mysql-0.mysql
-            - name: WORDPRESS_DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-creds
-                  key: user
-            - name: WORDPRESS_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-creds
-                  key: password
-            - name: WORDPRESS_DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-creds
-                  key: db
-            ports:
-            - containerPort: 80
+          - name: csi-app
+            image: radial/busyboxplus:curl
+            command: ["/bin/sh", "-c"]
+            args: ["i=1; while true; do echo \"[\$HOSTNAME] counter: \$i\" >> /csi-data/logs.txt; i=\$((i+1)); sleep 5; done"]
             volumeMounts:
-            - name: data
-              mountPath: /var/www/html
+            - name: my-csi-volume
+              mountPath: "/csi-data"
           volumes:
-          - name: data
+          - name: my-csi-volume
             persistentVolumeClaim:
-              claimName: wordpress-data
-    ' | kubectl apply -f -
+              claimName: csi-pvc
+    EOF
+    kubectl apply -f csi-app.yaml
     ```
 
-    The wordpress container requires the `WORDPRESS_DB_HOST` and `WORDPRESS_DB_PASSWORD` environment variables. The first is populated using the headless service in the expected format (`<pod-name>.<service-name>`); the second is populated from the `mysql-creds` secret.
-
-    Verify the only replica of the Deployment is up and running by `kubectl get pods -l app=wordpress,tier=frontend`.
-
-
-3. Create a `ClusterIP` Service for the wordpress Deployment.
+2. Verify the Deployment is up and running.
 
     ```sh
-    echo '
-    apiVersion: v1
-    kind: Service
-    metadata:
-      name: wordpress
-      labels:
-        app: wordpress
-    spec:
-      selector:
-        app: wordpress
-        tier: frontend
-      ports:
-      - name: http
-        port: 80
-    ' | kubectl apply -f -
+    kubectl get deployments
     ```
 
-4. Create an Ingress resource to expose to wordpress service outside the cluster.
+    The output is simlar to this:
+
+    ```plaintext
+    NAME      READY   UP-TO-DATE   AVAILABLE   AGE
+    csi-app   1/1     1            1           22s
+    ```
+
+3. Check it is writing to the log file.
 
     ```sh
-    echo '
-    apiVersion: networking.k8s.io/v1
-    kind: Ingress
-    metadata:
-      name: wordpress-ingress
-      labels:
-        app: wordpress
-    spec:
-      ingressClassName: nginx
-      rules:
-      - http:
-          paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: wordpress
-                port:
-                  number: 80
-    ' | kubectl apply -f -
+    POD_NAME=$(kubectl get pods -l app=csi-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
+    kubectl exec -it $POD_NAME -- cat /csi-data/logs.txt
     ```
 
-    The wordpress is exposed through the Ingress Controller on the port of the ingress service. Get it by `kubectl get service -n ingress-nginx` and open the browser at `http://localhost:<nodePort>`.
+    The output is similar to this:
+
+    ```plaintext
+    [csi-app-9cf586df5-7h8vg] counter: 1
+    [csi-app-9cf586df5-7h8vg] counter: 2
+    [csi-app-9cf586df5-7h8vg] counter: 3
+    [csi-app-9cf586df5-7h8vg] counter: 4
+    [csi-app-9cf586df5-7h8vg] counter: 5
+    [csi-app-9cf586df5-7h8vg] counter: 6
+    ```
+
+4. Delete and recreate the Deployment.
+
+    ```sh
+    kubectl delete deployment csi-app
+    kubectl wait --for=delete pod/$POD_NAME --timeout=60s
+    kubectl apply -f csi-app.yaml
+    ```
+
+5. Verify the log file still contains the old logs.
+
+    ```sh
+    POD_NAME=$(kubectl get pods -l app=csi-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
+    kubectl exec -it $POD_NAME -- cat /csi-data/logs.txt
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    [csi-app-9cf586df5-7h8vg] counter: 1
+    [csi-app-9cf586df5-7h8vg] counter: 2
+    [csi-app-9cf586df5-7h8vg] counter: 3
+    [csi-app-9cf586df5-7h8vg] counter: 4
+    [csi-app-9cf586df5-7h8vg] counter: 5
+    [csi-app-9cf586df5-7h8vg] counter: 6
+    [csi-app-9cf586df5-wr4pq] counter: 1
+    [csi-app-9cf586df5-wr4pq] counter: 2
+    [csi-app-9cf586df5-wr4pq] counter: 3
+    ```
+
+## Expanding a Persistent Volume Claim
+
+A PVC can be expanded if and only if:
+
+* the CSI driver supports this feature;
+* the PVC is dinamically provisioned by a Storage Class that has `allowVolumeExpansion` parameter set to `true`.
+
+**Note**: Persistent Volume Claims can not be shrinked.
+
+The installed CSI driver and the created `StorageClass` enable you to expand PVCs.
+
+1. Try to increase the size of the `csi-pvc` Persistent Volume Claim to `2Gi`.
+
+    ```sh
+    kubectl patch persistentvolumeclaim csi-pvc -p '{"spec": {"resources": {"requests": {"storage": "2Gi"}}}}'
+    ```
+
+2. Wait for a few seconds and then run `kubectl get pvc`. The `CAPACITY` should be increased to `2Gi`.
+
+## Clean up
+
+1. Delete Deployment and PVC resources.
+
+    ```sh
+    kubectl delete deployment csi-app
+    kubectl wait --for=delete pod/$POD_NAME --timeout=60s
+    kubectl delete persistentvolumeclaim csi-pvc
+    ```
+
+2. Verify the Persistent Volume is automatically deleted due to the `csi-hostpath-sc` Storage Class reclaim policy set to `Delete`.
+
+    ```sh
+    kubectl get persistentvolumes
+    ```
+
+    The output should be `No resources found`.
+
+## Next
+
+[Lab 08](./lab08.md)

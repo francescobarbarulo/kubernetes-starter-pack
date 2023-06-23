@@ -1,26 +1,27 @@
 # Lab 03
 
-In this lab you are going to deploy a private container registry used to store your container images.
-
-Open a shell in the `registry` environment.
-You should see something similar to this:
-
-```plaintext
-root@registry:~#
-```
+In this lab you are going to deploy a private registry used to store your container images and push the `getting-started` image to it.
 
 ## Deploy the registry server
 
 Docker provides a containerized local registry that can be started using the `docker run` command. You will also configure the registry server by providing native basic authentication.
 
-1. Create a password file tool with one entry for the user `testuser`, with password `testpassword`, using the `htpasswd` tool provided in the `httpd` image:
+Open a shell in the `registry` environment.
+
+1. Install Docker Engine:
+
     ```sh
-    cd && mkdir auth && docker run \
+    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/docker-install.sh | sh
+    ```
+
+2. Create a password file tool with one entry for the user `testuser`, with password `testpassword`, using the `htpasswd` tool provided in the `httpd` image:
+    ```sh
+    mkdir auth && docker run \
     --entrypoint htpasswd \
     httpd:2 -Bbn testuser testpassword > auth/htpasswd
     ```
 
-2. Start the registry with basic authentication:
+3. Start the registry with basic authentication:
     ```sh
     docker run -d \
     -p 5000:5000 \
@@ -32,20 +33,19 @@ Docker provides a containerized local registry that can be started using the `do
     registry:2
     ```
 
-3. After a few seconds, open your web browser at `http://<registry>:5000/v2/_catalog`. Use the above credentials when requested. You should see an empty json response `{"repositories":[]}`.
+4. After a few seconds, open the web browser at `http://<registry-ip>:5000/v2/_catalog`. Use the above credentials when requested. You should see an empty json response:
 
-4. Exit the `registry` environment.
+    ```json
+    {"repositories":[]}
+    ```
+
+    **Tip**: Get the `registry` IP address by running `lxc list` on the `student` machine opening another terminal window.
 
 ## Push the image to the registry
 
 Once you built the app container image, you are ready to push it to your container registry.
 
 Open a shell in the `dev` environment.
-You should see something similar to this:
-
-```plaintext
-root@dev:~#
-```
 
 1. Try running the push command:
     ```sh
@@ -61,25 +61,47 @@ root@dev:~#
 
     The error occurred because the `docker push` command uses the Docker's public registry if it is not specified in the image name.
 
-2. Use the `docker tag` command to give the `getting-started` image a new name, including the registry hostname. If you don't specify a tag, Docker will use a tag called `latest`.
+2. Take note of the `registry` IP address.
 
     ```sh
-    docker tag getting-started:v2 <dev>:5000/getting-started:v2
+    export REGISTRY=<registry-ip>
     ```
 
-3. Before pushing the renamed image, login to the local registry using `testpassword` as password when prompted.
+3. Configure Docker to contact the `registry` using HTTP.
 
     ```sh
-    docker login <dev>:5000 -u testuser
+    cat <<EOF | tee /etc/docker/daemon.json > /dev/null
+    {
+        "insecure-registries" : ["http://$REGISTRY:5000"]
+    }
+    EOF
     ```
 
-4. Now try to push again.
+4. Restart Docker daemon.
 
     ```sh
-    docker push <dev>:5000/getting-started:v2
+    systemctl restart docker
     ```
 
-5. Check the image is present on the registry by refreshing the web browser at `http://<dev>:5000/v2/_catalog`. You should see a json response like this:
+5. Use the `docker tag` command to give the `getting-started` image a new name, including the registry hostname. If you don't specify a tag, Docker will use a tag called `latest`.
+
+    ```sh
+    docker tag getting-started:v2 $REGISTRY:5000/getting-started:v2
+    ```
+
+6. Before pushing the renamed image, login to the local registry using `testpassword` as password when prompted.
+
+    ```sh
+    docker login $REGISTRY:5000 -u testuser
+    ```
+
+7. Now try to push again.
+
+    ```sh
+    docker push $REGISTRY:5000/getting-started:v2
+    ```
+
+8. Check the image is present on the registry by refreshing the web browser at `http://<registry-ip>:5000/v2/_catalog`. You should see a json response like this:
 
     ```json
     {"repositories":["getting-started"]}

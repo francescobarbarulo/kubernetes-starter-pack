@@ -2,14 +2,9 @@
 
 In this lab you are going to install the Docker Engine, run some containers based on images publicly available on Docker Hub, and create your own container image.
 
-Open a shell in the `dev` environment.
-You should see something similar to this:
-
-```plaintext
-root@dev:~#
-```
-
 ## Install Docker Engine
+
+Open a shell in the `dev` environment.
 
 1. Launch the installation script which will follow the [repository installation method](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
 
@@ -53,7 +48,7 @@ Now you are ready to run your first container using the Docker CLI.
     docker ps
     ```
 
-    The output shows all running containers. As you see, there are not any containers up and running. This because the `hello` container is not a service that continously run, but it prints a message and exits.
+    The output shows all running containers. As you see, there are not any containers up and running. This because the `hello` container is not a service that continuously runs, but it prints a message and exits.
 
 5. You can list all containers, independently of their state, by adding the `-a` flag.
 
@@ -75,7 +70,7 @@ Now you are ready to run your first container using the Docker CLI.
     ```sh
     docker run --name apache httpd:2.4
     ```
-    > The `run` command automatically pull the image if it is not found locally. In general, there is no need to pull the image before running the container.
+    > The `run` command automatically pulls the image if it is not found locally. In general, there is no need to pull the image before running the container.
 
     By default, `docker run` can start the process in the container and attach the console to the process’s standard input, output, and standard error.
     Usually containers are started in detached mode, so that you can get back the shell.
@@ -109,6 +104,8 @@ Now you are ready to run your first container using the Docker CLI.
     docker run --name apache -d httpd:2.4
     ```
 
+    The output represents the containerd ID.
+
 ## Build you own container image
 
 Assume you have a project codebase hosted on some version control hosting platform like GitHub.
@@ -132,11 +129,11 @@ Assume you have a project codebase hosted on some version control hosting platfo
     EOF
     ```
 
-    * The [`FROM`](https://docs.docker.com/engine/reference/builder/#from) instruction initializes a new build stage and sets the Base Image for subsequent instructions. As such, a valid Dockerfile must start with a `FROM` instruction. The image can be any valid image – it is especially easy to start by pulling an image from the Public Repositories.
+    * The [`FROM`](https://docs.docker.com/engine/reference/builder/#from) instruction initializes a new build stage and sets the Base Image for subsequent instructions. As such, a valid Dockerfile must start with a `FROM` instruction. The image can be any valid image – it is especially easy to start by pulling an image from the public repositories.
 
-    * The [`WORKDIR`](https://docs.docker.com/engine/reference/builder/#workdir) instruction sets the working directory for any `RUN`, `CMD`, `ENTRYPOINT`, `COPY` and `ADD` instructions that follow it in the `Dockerfile`.
+    * The [`WORKDIR`](https://docs.docker.com/engine/reference/builder/#workdir) instruction sets the working directory in the *image* filesystem for any `RUN`, `CMD`, `ENTRYPOINT`, `COPY` and `ADD` instructions that follow it in the `Dockerfile`.
 
-    * The [`COPY`](https://docs.docker.com/engine/reference/builder/#copy) instruction copies new files or directories from `<src>` and adds them to the filesystem of the container at the path `<dest>`.
+    * The [`COPY`](https://docs.docker.com/engine/reference/builder/#copy) instruction copies new files or directories from local filesystem at path `<src>` and adds them to the filesystem of the container at the path `<dest>`.
 
     * The [`RUN`](https://docs.docker.com/engine/reference/builder/#run) instruction will execute any commands in a new layer on top of the current image and commit the results. The resulting committed image will be used for the next step in the `Dockerfile`.
 
@@ -152,32 +149,51 @@ Assume you have a project codebase hosted on some version control hosting platfo
 
 ## Explore the image layers
 
+1. View all the layers of the image with their sizes, including the ones belonging to the base image `node:18-alpine`.
+
 ```sh
 docker history getting-started:v1
 ```
 
-The output shows all the layers of the image with their sizes, including the ones belonging to the base image `node:18-alpine`.
-
 ## Challenge 01
 
 Start the application container with name `myapp`, in detached mode, and verify it is up and running.
+Then stop and remove the `myapp` container.
+
+**Tip**: Run `docker --help` to show all the docker commands.
 
 <details>
-  <summary>Solution</summary>
+	<summary>Solution</summary>
 
-  ```sh
-  docker run -d --name myapp getting-started:v1
-  ```
+  1. Start `myapp` container.
 
-  The output is similar to this:
+      ```sh
+      docker run -d --name myapp getting-started:v1
+      ```
 
-  ```plaintext
-  CONTAINER ID   IMAGE                COMMAND                  CREATED         STATUS         PORTS      NAMES
-  bb9c561081a8   getting-started:v1   "docker-entrypoint.s…"   4 seconds ago   Up 3 seconds   3000/tcp   myapp
-  d082554ae65f   httpd:2.4            "httpd-foreground"       2 days ago      Up 3 minutes   80/tcp     apache
-  ```
+      The output is similar to this:
 
-  At the moment you are not able to access the appication from the browser outside the environment.
+      ```plaintext
+      CONTAINER ID   IMAGE                COMMAND                  CREATED         STATUS         PORTS      NAMES
+      bb9c561081a8   getting-started:v1   "docker-entrypoint.s…"   4 seconds ago   Up 3 seconds   3000/tcp   myapp
+      d082554ae65f   httpd:2.4            "httpd-foreground"       2 days ago      Up 3 minutes   80/tcp     apache
+      ```
+
+      At the moment you are not able to access the appication from the browser outside the environment.
+
+  2. Stop the `myapp` container.
+
+      ```sh
+      docker stop myapp
+      ```
+
+  3. Remove the `myapp` container.
+
+      ```sh
+      docker rm myapp
+      ```
+      > A container can be removed only if it has been previously stopped.
+
 </details>
 
 ## Next

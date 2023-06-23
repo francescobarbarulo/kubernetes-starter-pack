@@ -1,335 +1,309 @@
 # Lab 05
 
-In this lab you are going to use Services to expose Pods to the cluster. The you are going yo install an Ingress Controller to forward traffic to the right service based on the HTTP URI.
+In this lab you are going to install the Cilium CNI plugin, add a worker node to the cluster, and create, scale und update a Deployment.
 
-Open the terminal and run the following commands listed below.
+## Install a CNI plugin
 
-## Creating a Service
+Open a shell on the `student` machine.
 
-So you have pods running the `hello-app` in a flat, cluster wide, address space. In theory, you could talk to these pods directly, but:
-
-* What happens when a Pod gets recreated or the Deployment gets updated to a new version? The Deployment will create new ones, with different IPs. 
-
-* How to load-balance requests among multiple replicas?
-
-These are problems a Service solves.
-
-1. Create a service for your `hello-app` replicas by exposing the deployment which forwards every request arriving on port `80` to port `8080` of the endpoints.
+1. Kubernetes is not opinionated, it lets you choose your own CNI solution. Until a CNI plugin is installed the cluster will be inoperable. List the running Pods in all namespaces (`-A`):
 
     ```sh
-    kubectl expose deployment hello-app --port 80 --target-port 8080
+    kubectl get pod -A
     ```
 
-    This is equivalent to `kubectl apply -f` the following yaml:
+    You should see the CoreDNS Pods not ready and they will not start up before a network is installed.
 
-    ```yaml
-    apiVersion: v1
-    kind: Service
-    metadata:
-      name: hello-app
-    spec:
-      selector:
-        app: hello-app
-      ports:
-      - name: http
-        port: 80
-        targetPort: 8080
-    ```
-
-    This will create a Service which targets TCP port `8080` on any Pod with the `app: hello-app` label, and expose it on an the Service TCP port `80`.
-
-2. Check the Service:
+2. Install [Cilium](https://cilium.io/) as our CNI plugin.
 
     ```sh
-    kubectl get services
+    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/cni-cilium-install.sh | sh
     ```
 
-    Service is backed by a group of Pods that are exposed through EndpointSlices. The Service's selector will be evaluated continuously and the results will be POSTed to an EndpointSlice that is connected to the Service using a labels. When a Pod dies, it is automatically removed from the EndpointSlices that contain it as an endpoint. New Pods that match the Service's selector will automatically get added to an EndpointSlice for that Service. 
-  
-3. Check the endpoints, and note that the IPs are the same as the Pods created at the end of Lab 04.
+    The script will deploy two Pods:
+    * `cilium-operator`
+    * `cilium-agent`
+
+    The Operator is responsible for managing duties in the cluster which should logically be handled once for the entire cluster.
+    The Agent runs on each node in the cluster and configures Pod network interfaces as workloads are created and deleted.
+
+3. Great! Now if you take a look at the cluster it should be in the `Ready` status.
 
     ```sh
-    kubectl describe service hello-app
+    kubectl get nodes
     ```
 
-4. You should now be able to curl the nginx Service on `<CLUSTER-IP>:<PORT>` from any node in your cluster.
+4. Let's take a look at the running Pods too by running. CoreDNS and Cilium pods are now running.
 
     ```sh
-    CLUSTER_IP=$(kubectl get services hello-app -o jsonpath='{.spec.clusterIP}')
-    curl http://$CLUSTER_IP:80
+    kubectl get pod -n kube-system
     ```
 
-<!-- ## Service Routing
+    Note that the Pods you have so far are part of the Kubernetes system itself, therefor they run in a namespace called `kube-system`.
 
-How are Services implemented? The default Kubernetes implementation is to let the kube-proxy (which usually runs under a DaemonSet on every node in the cluster) modify the iptables with DNAT rules.
+**Note**: DO NOT PROCEDE UNITL THE `k8s-cp-01` IS IN A READY STATE.
 
-1. Let's look for your service in the NAT table.
+## Add a worker node
+
+Open a shell in `k8s-cp-01` environment.
+
+1. Create a new token and print the join command.
 
     ```sh
-    sudo iptables -n -t nat -L KUBE-SERVICES | grep $CLUSTER_IP
+    kubeadm token create --print-join-command
+    ```
+
+Open a shell in the `k8s-w-01` environment.
+
+Like the control-plane node, the new worker node must be prepared installing and configuring prerequisites (e.g. enabling IPv4 forwarding and letting iptables see bridged traffic), a container runtime (`containerd` and `runc`), `kubeadm` and `kubelet`.
+
+2. Set some environment variables.
+
+    ```sh
+    export K8S_VERSION=1.25.6
+    export ARCH=amd64
+    export REGISTRY=<registry-ip>
+    ```
+
+3. Install required tools.
+    ```sh
+    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lxd/node-prep.sh | sh
+    ```
+
+4. Join the worker node to the exsisting cluster by running the `kubeadm join` command printed at step 1.
+
+Open a shell to the `student` machine.
+
+1. Verify the the newly joined worker node is in `Ready` state.
+
+    ```sh
+    kubectl get nodes
+    ```
+**Note**: DO NOT PROCEDE UNITL THE `k8s-w-01` IS IN A READY STATE.
+
+## Deploy an application
+
+Open a shell on the `student` machine.
+
+1. Let’s deploy our first app on Kubernetes with the kubectl create deployment command. You need to provide the deployment name and app image location.
+
+    ```sh
+    kubectl create deployment hello-app --image=gcr.io/google-samples/hello-app:1.0
+    ```
+
+    Great! You just deployed your first application by creating a deployment in the `default` namespace. This performed a few things for you:
+    * searched for a suitable node where an instance of the application could be run (you have only 1 available node);
+    * scheduled the application to run on that Node;
+    * configured the cluster to reschedule the instance on a new Node when needed.
+
+2. List the deployments by running:
+
+    ```sh
+    kubectl get deployments
+    ```
+
+    You should see `0/1` in the `READY` column. It represents the ratio of `CURRENT/DESIRED` replicas. This means that the pod seems not to come up. Let's invenstigate more.
+
+3. List Pods and take note of the pod name.
+
+    ```sh
+    kubectl get pods
+    POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
+    ```
+
+4. Inspect the Pod to get more details.
+
+    ```sh
+    kubectl describe pod $POD_NAME
+    ```
+
+    You should see an error like the following:
+
+    ```plaintext
+    Type     Reason            Age    From               Message
+    ----     ------            ----   ----               -------
+    Warning  FailedScheduling  2m49s  default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint {node-role.kubernetes.io/control-plane: }. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+    ```
+
+    This means that the scheduler did not find any available nodes since the only node in the cluster belongs to the control plane. By default, Kubernetes prevents scheduling to control plane nodes by tainting them with `node-role.kubernetes.io/control-plane:NoSchedule`.
+
+5. Untaint the node to allow scheduling on the control plane node.
+
+    ```sh
+    kubectl taint node --all node-role.kubernetes.io/control-plane-
+    ```
+
+6. Now the deployment should be ready. If not, delete (`kubectl delete deployment hello-app`) and recreate it.
+
+7. Run the following command to see the ReplicaSet created by the Deployment.
+
+    ```sh
+    kubectl get replicasets
+    ```
+
+    The output is similar to this:
+
+    ```sh
+    NAME                   DESIRED   CURRENT   READY   AGE
+    hello-app-5c7f66c6b6   1         1         1       1m8s
+    ```
+
+    **Note**: The name of the ReplicaSet is always formatted as `[DEPLOYMENT-NAME]-[HASH]`. This name will become the basis for the Pods which are created.
+
+8. The Deployment automatically generates labels for each Pod in order to use them in the selctor. Run the following to see the Pod's labels.
+
+    ```sh
+    kubectl get pods --show-labels
+    ```
+
+9. If you try to delete a Pod belonging to a Deployment, the ReplicaSet controller will recreate a new one.
+
+    ```sh
+    kubectl delete pod $POD_NAME
+    ```
+
+    **Note**: The Pod name is changed.
+
+10. Anything that the application would normally send to `STDOUT` becomes logs for the container within the Pod. Retrieve these logs to verify the server is up:
+
+    ```sh
+    POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
+    kubectl logs $POD_NAME
     ```
 
     The output is similar to this:
 
     ```plaintext
-    target     prot opt source               destination
-    KUBE-SVC-KQHEELORMTTLHDA7  tcp  --  0.0.0.0/0            10.96.201.171        /* default/hello-app cluster IP */ tcp dpt:80
+    1970/01/01 16:20:52 Server listening on port 8080
     ```
 
-    The above rule states that everytime a tcp connection heading to `10.96.201.171` on port `80` is processed, jump to target chain `KUBE-SVC-KQHEELORMTTLHDA7` -->
+    **Note**: You don't need to specify the container name, because you only have one container inside the pod.
 
+## Scaling the deployment
 
+In order to facilitate more load, you may need to scale up the number of replicas for a microservice.
 
-## Accessing the Service from other Pods
-
-Kubernetes offers a DNS cluster addon Service that automatically assigns dns names to other Services. It came up when you istalled the CNI plugin.
-
-1. Let's run another curl application to test this:
+1. Scale the deployment by running:
 
     ```sh
-    kubectl run curl --image=radial/busyboxplus:curl -i --tty --rm
+    kubectl scale deployments/hello-app --replicas=4
     ```
 
-2. Let's resolve the `hello-app` Service name.
+2. Show the deployments to verify the current number of replicas matches the desired one.
 
     ```sh
-    nslookup hello-app
+    kubectl get deployments
     ```
 
-3. Test the random load balancer mechanism implemented by the Service. Run multiple times the command below and verify you get replies from different Pods.
+    You should see `4/4` in the `READY` column. If not, run again the command above.
+
+3. The change was applied, and you have 4 instances of the application available. Next, let’s check if the number of Pods changed:
 
     ```sh
-    curl hello-app
+    kubectl get pods -o wide
     ```
 
-4. Run `exit` to close the session.
-
-## Expose the application publicly
-
-Often front-end applications need to be reached from the outside world. The very basic solution is to use a `NodePort` service.
-
-1. Delete the ClusterIP service you previously created.
+4. There are 4 Pods now, with different IP addresses. The change was registered in the Deployment events log. To check that, use the describe command:
 
     ```sh
-    kubectl delete service hello-app
+    kubectl describe deployments/hello-app
     ```
 
-2. Create a new `NodePort` service from a YAML manifest selecting the target Pods using the label `app=hello-app`.
+## Deploy a new version of the application
+
+1. To update the image of the application to version 2 run:
 
     ```sh
-    echo '
-    apiVersion: v1
-    kind: Service
-    metadata:
-      name: hello-app
-    spec:
-      type: NodePort
-      selector:
-        app: hello-app
-      ports:
-      - name: http
-        port: 80
-        targetPort: 8080
-    ' | kubectl apply -f -
+    kubectl set image deployments/hello-app hello-app=gcr.io/google-samples/hello-app:2.0
     ```
 
-4. List the services:
+    The command notified the Deployment to use a different image for your app and initiated a rolling update.
+
+2. Check the status of the new Pods, and view the old one terminating.
 
     ```sh
-    kubectl get services
+    kubectl get pods -o wide
     ```
 
-    You should see an output like the following:
+    **Note**: The new Pods get new IP addresses.
 
-    ```plaintext
-    NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-    kubernetes            ClusterIP   10.96.0.1      <none>        443/TCP        5h
-    hello-app             NodePort    10.96.138.36   <none>        80:31203/TCP   13s
-    ```
-
-    The `hello-app` service is now of type `NodePort` and the assigned port is `31203`.
-    
-    **Note**: The port number may differ from yours. 
-
-5. Take note of the exposed port and verify the endpoints include the IP addresses of the Pods listed at step 2.
+3. Verify the rollout is successfully completed.
 
     ```sh
-    NODE_PORT=$(kubectl get services/hello-app -o jsonpath={.spec.ports[0].nodePort})
-    kubectl describe service hello-app
+    kubectl rollout status deployment hello-app
     ```
 
-6. Use curl to make an HTTP request, this time from outside the cluster using the IP address and port of the host.
+4. Let's list the replicasets to see that the Deployment updated the Pods by creating a new ReplicaSet and scaling it up to 4 replicas, as well as scaling down the old ReplicaSet to 0 replicas.
 
     ```sh
-    HOST_IP=$(hostname -I | awk '{print $1}')
-    curl http://$HOST_IP:$NODE_PORT
-    ```
-
-    Hooray! The application is now reachable from the world.
-
-7. Clean up deleting both the `hello-app` Deployment and the Service.
-
-    ```sh
-    kubectl delete deployment hello-app
-    kubectl delete service hello-app
-    ```
-
-## Install an Ingress Controller
-
-The downside of externally exposed services, like `NodePort` or `LoadBalancer`, is that you need to keep track of a bunch of IPs and ports.
-
-Kubernetes introduced an ingress framework to allow a single externally facing gateway to route HTTP/HTTPS traffic to multiple backend services. 
-
-Traffic routing is controlled by set of rules defined by Ingress resources that are fulfilled by an Ingress Controller.
-Unlike other types of controllers which run as part of the kube-controller-manager binary, Ingress controllers are not started automatically with a cluster.
-
-There are several open-source Ingress Controller implementations. You are going to deploy the [NGINX ingress controller](https://kubernetes.github.io/ingress-nginx/).
-
-1. Deploy the ingress controller.
-
-    ```sh
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.6.4/deploy/static/provider/cloud/deploy.yaml
-    ```
-
-    As the output shows, the manifest applied above creates a new namespace called `ingress-nginx`, plus a bunch of resources needed by the controller to function properly, including the service named `ingress-nginx-controller` and the IngressClass `nginx` (`kubectl get ingressclasses`).
-
-2. Verify the controller is up and running.
-
-    ```sh
-    kubectl get deployments -n ingress-nginx
-    ```
-
-    **Note**: Since the controller has not been deployed in the `default` namespace, we need to include the `-n <namespace>` flag to list resources in the specified namespace.
-
-    The output is similar to this:
-
-    ```plaintext
-    NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
-    ingress-nginx-controller   1/1     1            1           44s
-    ```
-
-3. Let's show the `ingress-nginx-controller` Service.
-
-    ```sh
-    kubectl get service ingress-nginx-controller -n ingress-nginx
+    kubectl get replicasets
     ```
 
     The output is similar to this:
 
     ```plaintext
-    NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
-    ingress-nginx-controller   LoadBalancer   10.96.186.119   <pending>     80:30958/TCP,443:31600/TCP   1m2s
+    NAME                   DESIRED   CURRENT   READY   AGE
+    hello-app-5c7f66c6b6   4         4         4       15m
+    hello-app-f4b774b69    0         0         0       18s
     ```
 
-    By default, this Service is of type `LoadBalancer` and the assignment of an external IP is in the `pending` status. Howerver a Service of type `LoadBalancer` includes all the funcitonalities of the `NodePort` one. In fact, the service is already exposed on port `30958` and `31600` of the host.
+## Rolling back a deployment
 
-4. Update the Service `type` field to `NodePort`.
+1. Suppose that you made a typo while updating the Deployment, by putting the image name as `hello-app:2.1` instead of `hello-app:2.0`.
 
     ```sh
-    kubectl patch service ingress-nginx-controller -n ingress-nginx -p '{"spec": {"type": "NodePort"}}'
+    kubectl set image deployments/hello-app hello-app=gcr.io/google-samples/hello-app:2.1
     ```
 
-## Ingress Fan Out
-
-A fanout configuration routes traffic from a single IP address to more than one Service, based on the HTTP URI being requested.
-
-Now you are going to create two Deployments of different versions of the same application with each respective Services. Both of them will be accessible through the Ingress Controller at path respectively `/v1` and `/v2`.
-
-1. Create the `v1` Deployment.
+2. The rollout gets stuck. You can verify it by checking the rollout status:
 
     ```sh
-    kubectl create deployment hello-app-v1 --image=gcr.io/google-samples/hello-app:1.0
-    ```
-
-2. Expose the `v1` Deployment on port `8001`.
-
-    ```sh
-    kubectl expose deployment hello-app-v1 --port 8001 --target-port 8080
-    ```
-
-3. Create the `v2` Deployment.
-
-    ```sh
-    kubectl create deployment hello-app-v2 --image=gcr.io/google-samples/hello-app:2.0
-    ```
-
-4. Expose the `v2` Deployment on port `8002`.
-
-    ```sh
-    kubectl expose deployment hello-app-v2 --port 8002 --target-port 8080
-    ```
-
-5. Create the Ingress resource with a rule with two paths, one per application version.
-
-    ```sh
-    echo '
-    apiVersion: networking.k8s.io/v1
-    kind: Ingress
-    metadata:
-      name: hello-app-ingress
-    spec:
-      ingressClassName: nginx
-      rules:
-      - http:
-          paths:
-          - path: /v1
-            pathType: Prefix
-            backend:
-              service:
-                name: hello-app-v1
-                port:
-                  number: 8001
-          - path: /v2
-            pathType: Prefix
-            backend:
-              service:
-                name: hello-app-v2
-                port:
-                  number: 8002
-    ' | kubectl apply -f -
-    ```
-
-    **Note**: In order to attach this Ingress to the right Ingress Controller you must specify the `ingressClassName: nginx`. 
-
-6. Verify you can reach both versions of the `hello-app` using the Ingress Controller Service.
-
-    ```sh
-    IC_NODE_PORT=$(kubectl get service ingress-nginx-controller -n ingress-nginx -o jsonpath={.spec.ports[0].nodePort})
-    curl http://$HOST_IP:$IC_NODE_PORT/v1
+    kubectl rollout status deployment hello-app
     ```
 
     The output is similar to this:
 
     ```plaintext
-    Hello, world!
-    Version: 1.0.0
-    Hostname: hello-app-v1-755c49459-c2g7z
+    Waiting for rollout to finish: 2 out of 4 new replicas have been updated...
     ```
+    Press `Ctrl-C` to stop the above rollout status watch.
 
-    Try to use the `/v2` path.
+3. Looking at the Pods created, you see that 2 Pods created by new ReplicaSet is stuck in an image pull loop.
 
     ```sh
-    curl http://$HOST_IP:$IC_NODE_PORT/v2
+    kubectl get pods
     ```
 
     The output is similar to this:
 
     ```plaintext
-    Hello, world!
-    Version: 2.0.0
-    Hostname: hello-app-v2-7796f8f5-hf25b
+    NAME                         READY   STATUS             RESTARTS   AGE
+    hello-app-5c7f66c6b6-dm2zn   1/1     Running            0          35m
+    hello-app-5c7f66c6b6-fklpb   1/1     Running            0          35m
+    hello-app-5c7f66c6b6-nqll9   1/1     Running            0          35m
+    hello-app-6f7cc84b47-2mqll   0/1     ImagePullBackOff   0          10s
+    hello-app-6f7cc84b47-qhpwp   0/1     ImagePullBackOff   0          10s
     ```
 
-## Clean up
+    **Note**: The Deployment controller stops the bad rollout automatically, and stops scaling up the new ReplicaSet.
 
-1. Delete Deployment and Service resources you created in the steps before.
+4. To fix this, you need to rollback to a previous revision of Deployment that is stable.
 
     ```sh
-    kubectl delete deployment hello-app-v1
-    kubectl delete deployment hello-app-v2
-    kubectl delete service hello-app-v1
-    kubectl delete service hello-app-v2
-    kubectl delete ingress hello-app-ingress
+    kubectl rollout undo deployment hello-app
+    ```
+
+5. Check if the rollback was successful and the Deployment is running as expected, run:
+
+    ```sh
+    kubectl get deployment hello-app
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+    hello-app   4/4     4            4           1m21s
     ```
 
 ## Next

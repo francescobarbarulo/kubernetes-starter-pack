@@ -1,259 +1,277 @@
 # Lab 04
 
-In this lab you are going to install the Cilium CNI plugin and create, scale und update a Deployment.
+In this lab you are going to create a Kubernetes cluster with `kubeadm`, starting from the initialization of the control-plane node.
 
-Open the terminal and run the following commands listed below.
 
-## Install a CNI plugin
+## Initialize the control-plane node
 
-1. Kubernetes is not opinionated, it lets you choose your own CNI solution. Until a CNI plugin is installed the cluster will be inoperable. List the running Pods in all namespaces (`-A`):
+Open a shell in the `k8s-cp-01` environment.
 
-    ```sh
-    kubectl get pod -A
-    ```
-
-    You should see the CoreDNS Pods not ready and they will not start up before a network is installed.
-
-2. Install [Cilium](https://cilium.io/) as our CNI plugin.
+1. Set some environment variables.
 
     ```sh
-    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/cni-cilium-install.sh | sh
+    export K8S_VERSION=1.25.6
+    export ARCH=amd64
+    export REGISTRY=<registry-ip>
     ```
 
-    The script will deploy two Pods:
-    * `cilium-operator`
-    * `cilium-agent`
+1. Prepare the host by installing and configuring prerequisites (e.g. enabling IPv4 forwarding and letting iptables see bridged traffic), a container runtime (`containerd` and `runc`), `kubeadm` and `kubelet`.
+    ```sh
+    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lxd/node-prep.sh | sh
+    ```
 
-    The Operator is responsible for managing duties in the cluster which should logically be handled once for the entire cluster.
-    The Agent runs on each node in the cluster and configures Pod network interfaces as workloads are created and deleted.
-
-    Great! Now if you take a look at the cluster it should be in the `Ready` status.
-
-    Let's take a look at the running Pods too by running `kubectl get pod -n kube-system`. CoreDNS and Cilium pods are now running.
-
-    Note that the Pods you have so far are part of the Kubernetes system itself, therefor they run in a namespace called `kube-system`.
-
-## Deploy an application
-
-1. Let’s deploy our first app on Kubernetes with the kubectl create deployment command. You need to provide the deployment name and app image location.
+2. Create the configuration file for kubeadm.
 
     ```sh
-    kubectl create deployment hello-app --image=gcr.io/google-samples/hello-app:1.0
+    cat <<EOF | tee ~/kubeadm-config.yaml > /dev/null
+    kind: InitConfiguration
+    apiVersion: kubeadm.k8s.io/v1beta3
+    nodeRegistration:
+        criSocket: "unix:///run/containerd/containerd.sock"
+    ---
+    kind: ClusterConfiguration
+    apiVersion: kubeadm.k8s.io/v1beta3
+    kubernetesVersion: v$K8S_VERSION
+    clusterName: "kubernetes"
+    networking:
+        dnsDomain: "cluster.local"
+        serviceSubnet: "10.96.0.0/12"
+    ---
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    cgroupDriver: "systemd"
+    EOF
     ```
 
-    Great! You just deployed your first application by creating a deployment in the `default` namespace. This performed a few things for you:
-    * searched for a suitable node where an instance of the application could be run (you have only 1 available node);
-    * scheduled the application to run on that Node;
-    * configured the cluster to reschedule the instance on a new Node when needed.
-
-2. List the deployments by running:
+3. Boostrap the Kubernetes control-plane components.
 
     ```sh
-    kubectl get deployments
+    kubeadm init --config kubeadm-config.yaml
     ```
 
-    You should see `0/1` in the `READY` column. It represents the ratio of `CURRENT/DESIRED` replicas. This means that the pod seems not to come up. Let's invenstigate more.
-
-3. List Pods and take note of the pod name.
-
-    ```sh
-    kubectl get pods
-    POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
-    ```
-
-4. Inspect the Pod to get more details.
-
-    ```sh
-    kubectl describe pod $POD_NAME
-    ```
-
-    You should see an error like the following:
+    If everything worked fine, the output is similar to this:
 
     ```plaintext
-    Type     Reason            Age    From               Message
-    ----     ------            ----   ----               -------
-    Warning  FailedScheduling  2m49s  default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint {node-role.kubernetes.io/control-plane: }. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+    Your Kubernetes control-plane has initialized successfully!
+
+    To start using your cluster, you need to run the following as a regular user:
+
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+    Alternatively, if you are the root user, you can run:
+
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+
+    You should now deploy a pod network to the cluster.
+    Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+        https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+    Then you can join any number of worker nodes by running the following on each as root:
+
+    kubeadm join 172.30.10.252:6443 --token 6eqtaq.y2froj5ailc5jmsw \
+	    --discovery-token-ca-cert-hash sha256:15e198e09831fe77c4f727e214f166fd66c723bc69c9bf4c6bbc6788c6d8b4d4
     ```
 
-    This means that the scheduler did not find any available nodes since the only node in the cluster belongs to the control plane. By default, Kubernetes prevents scheduling to control plane nodes by tainting them with `node-role.kubernetes.io/control-plane:NoSchedule`.
+## Access the Kubernetes cluster with kubectl
 
-5. Untaint the node to allow scheduling on the control plane node.
+Open a shell on the `student` machine.
+
+1. Set again the environment variables.
 
     ```sh
-    kubectl taint node --all node-role.kubernetes.io/control-plane-
+    export K8S_VERSION=1.25.6
+    export ARCH=amd64
+    ``` 
+
+1. Install `kubectl`.
+
+    ```sh
+    curl -sLO https://dl.k8s.io/release/v${K8S_VERSION}/bin/linux/${ARCH}/kubectl
+    sudo install -m 755 kubectl /usr/local/bin/kubectl
+    rm -f kubectl
     ```
 
-6. Now the deployment should be ready. If not, delete (`kubectl delete deployment hello-app`) and recreate it.
-
-7. Run the following command to see the ReplicaSet created by the Deployment.
+2. Enable kubectl shell autompletion in the current session.
 
     ```sh
-    kubectl get replicasets
+    kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
+    source ~/.bashrc
+    ```
+
+5. Try to connect to the API server and check the nodes status.
+
+    ```sh
+    kubectl get node
+    ```
+
+    You should see the following message:
+
+    ```plaintext
+    The connection to the server localhost:8080 was refused - did you specify the right host or port?
+    ```
+
+    This is due to the lack of a kubeconfig file. The `kubectl` command-line tool uses kubeconfig files to find the information it needs to choose a cluster and communicate with the API server of a cluster.
+    By default, `kubectl` looks for the `~/.kube/config` file. You can specify other kubeconfig files by setting the `KUBECONFIG` environment variable. 
+    
+6. During cluster creation, kubeadm signs the certificate in the `/etc/kubernetes/admin.conf` to have `Subject: O = system:masters, CN = kubernetes-admin`. Copy it in `~/.kube/config` from `k8s-cp-01` environment:
+
+    ```sh
+    ls ~/.kube &> /dev/null || mkdir ~/.kube && lxc file pull k8s-cp-01/etc/kubernetes/admin.conf ~/.kube/config
+    ```
+
+7. Try to run `kubectl get node` again. The output is simlar to this:
+
+    ```plaintext
+    NAME        STATUS     ROLES           AGE   VERSION
+    k8s-cp-01   NotReady   control-plane   1m   v1.25.6
+    ```
+
+    As you see, the node is in the `NotReady` status. From the end of the `kubeadm init` output you may have seen the statement:
+
+    ```plaintext
+    You should now deploy a pod network to the cluster
+    ```
+
+    This means that to make the node `Ready` you need to install a CNI plugin responsible for managing the networking for the Kubernetes cluster.
+    However you can interact with the up and running API server with `kubectl`.
+
+## Kubernetes RBAC authorization management
+
+Kubernetes uses the Role-based access control (RBAC) method to regulate access to the cluster.
+At the moment, you are able to access the API server because you are using the `admin.conf` kubeconfig file that uses a signed certificate for `Subject: O = system:masters, CN = kubernetes-admin`. Kubernetes come with a ClusterRoleBinding named `cluster-admin` that binds the `cluster-admin` ClusterRole with the `system:masters` group. 
+
+1. Let's inspect the built-in `cluster-admin` ClusterRole.
+
+    ```sh
+    kubectl get clusterrole cluster-admin -o yaml
+    ```
+
+    As you see, it gives full access (`*` in `verbs`) to any resource (`*` in `resources`).
+
+2. Verify the above ClusterRole is bound to the `system:masters` group using the built-in `cluster-admin` ClusterRoleBinding.
+
+    ```sh
+    kubectl get clusterrolebinding cluster-admin -o yaml
+    ```
+
+ 3. `system:masters` is a break-glass, super user group that bypasses the authorization layer (e.g. RBAC). Sharing the `admin.conf` with additional users is **not recommended**! Instead, you can use the `kubeadm kubeconfig user` command to generate kubeconfig files for additional users. Kubernetes comes with other ClusterRoles, including the `admin` one, which allows admin access. This role is intended to be granted within a namespace using a **RoleBinding**. View the `admin` ClusterRole.
+
+    ```sh
+    kubectl get clusterrole admin -o yaml
+    ```
+ 
+ 4. Let's bind the `admin` ClusterRole to the group `admin` creating a RoleBinding.
+
+    ```sh
+    kubectl create rolebinding admin --clusterrole=admin --group=admin
+    ```
+
+    **Note**: This RoleBinding will be created in the `default` namespace. Thus, user belonging to `admin` group will have admin access only to the `default` namespace.
+
+Assume you need to assign admin privileges to your developer `jane` in the `default` namespace. You need to create a signed certificate for `Subject: O = admin, CN = jane`. To do this you need the root CA certificate of the Kubernetes instance.
+
+1. Copy the key and the certificate from the control-plane node to the `student` machine.
+
+    ```sh
+    lxc file pull k8s-cp-01/etc/kubernetes/pki/ca.{key,crt} .
+    ```
+
+2. Generate jane keys.
+
+    ```sh
+    openssl genrsa -out jane.key 2048
+    ```
+
+3. Generate a *Certificate Signing Request*.
+
+    ```sh
+    openssl req -new -key jane.key -subj "/CN=jane/O=admin" -out jane.csr
+    ```
+
+4. Create and sign the certificate with the Kubernetes CA key.
+
+    ```sh
+    openssl x509 -req -in jane.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out jane.crt
+    ```
+
+5. Set an environment variable.
+
+    ```sh
+    export API_SERVER=<k8s-cp-01-ip>
+    ```
+
+6. Create a kubeconfig file for user `jane`.
+
+    ```sh
+    export CA_CRT=$(cat ca.crt | base64 -w 0)
+    export JANE_CRT=$(cat jane.crt | base64 -w 0)
+    export JANE_KEY=$(cat jane.key | base64 -w 0)
+    cat <<EOF | tee jane-config > /dev/null
+    apiVersion: v1
+    kind: Config
+    current-context: jane@kubernetes
+    clusters:
+    - name: kubernetes
+      cluster:
+        certificate-authority-data: ${CA_CRT}
+        server: https://${API_SERVER}:6443
+    contexts:
+    - name: jane@kubernetes
+      context:
+        cluster: kubernetes
+        user: jane
+        namespace: default
+    users:
+    - name: jane
+      user:
+        client-certificate-data: ${JANE_CRT}
+        client-key-data: ${JANE_KEY}
+    EOF
+    ```
+
+5. Set the `KUBECONFIG` environment variable to the just created kubeconfig file.
+
+    ```sh
+    export KUBECONFIG=jane-config
+    ```
+
+6. View the generated kubeconfig file.
+
+    ```sh
+    kubectl config view
+    ```
+
+7. Verify `jane` can create namespaced resources (e.g. Roles):
+
+    ```sh
+    kubectl auth can-i create roles
     ```
 
     The output is similar to this:
 
-    ```sh
-    NAME                   DESIRED   CURRENT   READY   AGE
-    hello-app-5c7f66c6b6   1         1         1       1m8s
+    ```plaintext
+    yes
     ```
 
-    **Note**: The name of the ReplicaSet is always formatted as `[DEPLOYMENT-NAME]-[HASH]`. This name will become the basis for the Pods which are created.
-
-8. The Deployment automatically generates labels for each Pod in order to use them in the selctor. Run the following to see the Pod's labels.
+    But `jane` can not list cluster scoped resources (e.g. Nodes):
 
     ```sh
-    kubectl get pods --show-labels
+    kubectl auth can-i get nodes
     ```
-
-9. If you try to delete a Pod belonging to a Deployment, the ReplicaSet controller will recreate a new one.
-
-    ```sh
-    kubectl delete pod $POD_NAME
-    ```
-
-    **Note**: The Pod name is changed.
-
-10. Anything that the application would normally send to `STDOUT` becomes logs for the container within the Pod. Retrieve these logs to verify the server is up:
-
-    ```sh
-    POD_NAME=$(kubectl get pods -l app=hello-app -o jsonpath='{range .items[*]}{.metadata.name}{end}')
-    kubectl logs $POD_NAME
-    ```
-
+  
     The output is similar to this:
 
     ```plaintext
-    1970/01/01 16:20:52 Server listening on port 8080
+    Warning: resource 'nodes' is not namespace scoped
+    no
     ```
 
-    **Note**: You don't need to specify the container name, because you only have one container inside the pod.
-
-## Scaling the deployment
-
-In order to facilitate more load, you may need to scale up the number of replicas for a microservice.
-
-1. Scale the deployment by running:
+8. Unset the `KUBECONFIG` environment variable.
 
     ```sh
-    kubectl scale deployments/hello-app --replicas=4
-    ```
-
-2. Show the deployments to verify the current number of replicas matches the desired one.
-
-    ```sh
-    kubectl get deployments
-    ```
-
-    You should see `4/4` in the `READY` column. If not, run again the command above.
-
-3. The change was applied, and you have 4 instances of the application available. Next, let’s check if the number of Pods changed:
-
-    ```sh
-    kubectl get pods -o wide
-    ```
-
-4. There are 4 Pods now, with different IP addresses. The change was registered in the Deployment events log. To check that, use the describe command:
-
-    ```sh
-    kubectl describe deployments/hello-app
-    ```
-
-## Deploy a new version of the application
-
-1. To update the image of the application to version 2 run:
-
-    ```sh
-    kubectl set image deployments/hello-app hello-app=gcr.io/google-samples/hello-app:2.0
-    ```
-
-    The command notified the Deployment to use a different image for your app and initiated a rolling update.
-
-2. Check the status of the new Pods, and view the old one terminating.
-
-    ```sh
-    kubectl get pods -o wide
-    ```
-
-    **Note**: The new Pods get new IP addresses.
-
-3. Verify the rollout is successfully completed.
-
-    ```sh
-    kubectl rollout status deployment hello-app
-    ```
-
-4. Let's list the replicasets to see that the Deployment updated the Pods by creating a new ReplicaSet and scaling it up to 4 replicas, as well as scaling down the old ReplicaSet to 0 replicas.
-
-    ```sh
-    kubectl get replicasets
-    ```
-
-    The output is similar to this:
-
-    ```plaintext
-    NAME                   DESIRED   CURRENT   READY   AGE
-    hello-app-5c7f66c6b6   4         4         4       15m
-    hello-app-f4b774b69    0         0         0       18s
-    ```
-
-## Rolling back a deployment
-
-1. Suppose that you made a typo while updating the Deployment, by putting the image name as `hello-app:2.1` instead of `hello-app:2.0`.
-
-    ```sh
-    kubectl set image deployments/hello-app hello-app=gcr.io/google-samples/hello-app:2.1
-    ```
-
-2. The rollout gets stuck. You can verify it by checking the rollout status:
-
-    ```sh
-    kubectl rollout status deployment hello-app
-    ```
-
-    The output is similar to this:
-
-    ```plaintext
-    Waiting for rollout to finish: 2 out of 4 new replicas have been updated...
-    ```
-    Press `Ctrl-C` to stop the above rollout status watch.
-
-3. Looking at the Pods created, you see that 2 Pods created by new ReplicaSet is stuck in an image pull loop.
-
-    ```sh
-    kubectl get pods
-    ```
-
-    The output is similar to this:
-
-    ```plaintext
-    NAME                         READY   STATUS             RESTARTS   AGE
-    hello-app-5c7f66c6b6-dm2zn   1/1     Running            0          35m
-    hello-app-5c7f66c6b6-fklpb   1/1     Running            0          35m
-    hello-app-5c7f66c6b6-nqll9   1/1     Running            0          35m
-    hello-app-6f7cc84b47-2mqll   0/1     ImagePullBackOff   0          10s
-    hello-app-6f7cc84b47-qhpwp   0/1     ImagePullBackOff   0          10s
-    ```
-
-    **Note**: The Deployment controller stops the bad rollout automatically, and stops scaling up the new ReplicaSet.
-
-4. To fix this, you need to rollback to a previous revision of Deployment that is stable.
-
-    ```sh
-    kubectl rollout undo deployment hello-app
-    ```
-
-5. Check if the rollback was successful and the Deployment is running as expected, run:
-
-    ```sh
-    kubectl get deployment hello-app
-    ```
-
-    The output is similar to this:
-
-    ```plaintext
-    NAME        READY   UP-TO-DATE   AVAILABLE   AGE
-    hello-app   4/4     4            4           1m21s
+    unset KUBECONFIG
     ```
 
 ## Next

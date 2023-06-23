@@ -1,33 +1,28 @@
 # Lab 02
 
 In this lab you are going to expose your application to be reachable outside the environment.
-Then you will create and attach a volume to the database container to persist the todo list upon the container restarts.
+Then you will create and attach a volume to the container to persist the todo list upon the container restarts.
 Finally you will connect it to a containerized mysql database used to store the todo items.
-
-Open a shell in the `dev` environment.
-You should see something similar to this:
-
-```plaintext
-root@dev:~#
-```
 
 ## Expose the application
 
-1. Start the application container called `myapp-internal`, but this time adding the `-p` flag. The *publish* flag is used to create a mapping between the host's port `8080` to the container's port `3000`. Without the port mapping, you wouldn't be able to access the application even if you specified it in the `Dockerfile` with the `EXPOSE` instruction which only functions as a type of documentation between the person who builds the image and the person who runs the container, about which ports are intended to be published.
+Open a shell in the `dev` environment.
+
+1. Start the application container, but this time adding the `-p` flag. The *publish* flag is used to create a mapping between the host's port `8080` to the container's port `3000`. Without the port mapping, you wouldn't be able to access the application even if you specified it in the `Dockerfile`.
 
     ```sh
-    docker run --name myapp-internal -d -p 8080:3000 getting-started:v1
+    docker run --name myapp-v1 -d -p 8080:3000 getting-started:v1
     ```  
 
-2. After a few seconds, open the web browser to `http://<dev>:8080` and you should see your app.
+2. After a few seconds, open the web browser in the `student` machine to `http://<dev-ip>:8080` and you should see your app.
     
-    **Tip**: Open another terminal window and run `lxc list`.
+    **Tip**: Get the `dev` IP address by running `lxc list` on the `student` machine opening another terminal window.
 
 3. In the application add an item or two and see that it works as you expect. You can mark items as complete and remove items. Your frontend is successfully storing items in the backend.
 
 ## Update the source code
 
-Make sure you came back to the `dev` environment (`root@dev`).
+Open a shell in the `dev` environment.
 
 1. In the `src/static/js/app.js` file, update line 56 to use the new empty text:
 
@@ -44,38 +39,36 @@ Make sure you came back to the `dev` environment (`root@dev`).
 3. Start a new container using the new image.
 
     ```sh
-    docker run -d -p 8080:3000 getting-started:v2
+    docker run --name myapp-v2 -d -p 8080:3000 getting-started:v2
     ```
 
     You probably saw an error like this (the IDs will be different):
 
     ```plaintext
-    docker: Error response from daemon: driver failed programming external connectivity on endpoint laughing_burnell 
-    (bb242b2ca4d67eba76e79474fb36bb5125708ebdabd7f45c8eaf16caaabde9dd): Bind for 0.0.0.0:3000 failed: port is already allocated.
+    docker: Error response from daemon: driver failed programming external connectivity on endpoint myapp-v2 (20bb8e5a714bcb2119ba21c3ba6f1387be61ff81daf8227434d6bfa8b20be6ae): Bind for 0.0.0.0:8080 failed: port is already allocated.
     ```
 
-    The error occurred because you aren’t able to start the new container while your old container is still running. The reason is that the old container is already using the host’s port `8080` and only one process on the machine (containers included) can listen to a specific port. To fix this, you need to remove the old container.
+    The error occurred because you aren't able to start the new container while your old container is still running. The reason is that the old container is already using the host's port `8080` and only one process on the machine (containers included) can listen to a specific port. To fix this, you need to remove the old container.
 
 ## Challenge 02
 
-Stop and remove the old container, start again the new one with port mapping and name `myapp-external`, and verify it is up and running.
+Stop and remove the old container, start again the new one with port mapping and name `myapp`, and verify it is up and running.
 
 <details>
   <summary>Solution</summary>
 
-  1. Remove the `myapp-internal` container.
+  1. Remove the `myapp-v1` container.
 
         ```sh
-        docker stop myapp-internal
-        docker rm myapp-internal
+        docker rm -f myapp-v1
         ```
 
-        > A container can be removed only if it is previously stopped. You can use `docker rm -f <container-id>` to force the deletion even if the container is running.
+        > You can use the `-f` flag to force the deletion even if the container is running.
 
   2. Start the new container.
 
         ```sh
-        docker run --name myapp-external -d -p 8080:3000 getting-started:v2
+        docker run --name myapp -d -p 8080:3000 getting-started:v2
         ```
 
 </details>
@@ -102,13 +95,13 @@ As mentioned, you are going to use a named volume. Think of a named volume as si
 2. Stop and remove the todo app container once again as it is still running without using the persistent volume.
 
     ```sh
-    docker rm -f myapp-external
+    docker rm -f myapp
     ```
 
 3. Start the todo app container, but add the `-v` flag to specify a volume mount. You will use the named volume and mount it to `/etc/todos`, which will capture all files created at the path.
 
     ```sh
-    docker run --name myapp-external -d -p 8080:3000 -v todo-db:/etc/todos getting-started:v2
+    docker run --name myapp -d -p 8080:3000 -v todo-db:/etc/todos getting-started:v2
     ```
 
 4. Once the container starts up, open the app and add a few items to your todo list.
@@ -118,6 +111,10 @@ As mentioned, you are going to use a named volume. Think of a named volume as si
 6. Start a new container using the same command from above. What do you expect? Open the app and you should see your items still in your list!
 
 7. Go ahead and remove the container when you’re done checking out your list.
+
+    ```sh
+    docker rm -f myapp
+    ```
 
 Hooray! You’ve now learned how to persist data!
 
@@ -151,6 +148,7 @@ There are two ways to put a container on a network: (i) Assign it at start or (i
 
     ```sh
     docker run -d \
+      --name mysql \
       --network todo-app --network-alias mysql \
       -v todo-mysql-data:/var/lib/mysql \
       -e MYSQL_ROOT_PASSWORD=secret \
@@ -166,8 +164,10 @@ There are two ways to put a container on a network: (i) Assign it at start or (i
 3. To confirm you have the database up and running, connect to the database and verify it connects.
 
     ```sh
-    docker exec -it <mysql-container-id> mysql -u root -p
+    docker exec -it mysql mysql -u root -p
     ```
+
+    > `mysql -u root -p` is the command executed inside the `mysql` container.
 
     When the password prompt comes up, type in __secret__. In the MySQL shell, list the databases and verify you see the `todos` database.
 
@@ -196,7 +196,7 @@ There are two ways to put a container on a network: (i) Assign it at start or (i
     exit
     ```
 
-    Hooray! You have our todos database and it’s ready for us to use!
+Hooray! You have our todos database and it’s ready for us to use!
 
 ## Run your app with MySQL
 
@@ -213,29 +213,40 @@ Let's connect the todo app to MySQL.
 
     ```sh
     docker run -d -p 8080:3000 \
+      --name todo-app \
       --network todo-app \
       -e MYSQL_HOST=mysql \
       -e MYSQL_USER=root \
       -e MYSQL_PASSWORD=secret \
       -e MYSQL_DB=todos \
-      localhost:5000/getting-started:v2
+      getting-started:v2
     ```
 
     > You'll notice you're using the value `mysql` as `MYSQL_HOST`. While `mysql` isn't normally a valid hostname, Docker is able to resolve it to the IP address of the mysql container thanks to the `--network-alias` flag.
 
-2. If you look at the logs for the container (`docker logs -f <container-id>`), you should see a message indicating it's using the mysql database.
+2. Take a look at the logs for the container
+
+    ```sh
+    docker logs -f todo-app
+    ```
+    
+    The output is similar to this:
 
     ```plaintext
+    Waiting for mysql:3306.
+    Connected!
     Connected to mysql db at host mysql
     Listening on port 3000
     ```
+
+    Press `Ctrl+C` to get back the shell.
 
 3. Open the app in your browser and add a few items to your todo list.
 
 4. Connect to the mysql database and prove that the items are being written to the database. Remember, the password is __secret__.
 
     ```sh
-    docker exec -it <mysql-container-id> mysql -p todos
+    docker exec -it mysql mysql -p todos
     ```
 
     And in the mysql shell, run the following:

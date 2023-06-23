@@ -143,9 +143,6 @@ version = 2
 
     [plugins."io.containerd.grpc.v1.cri".registry]
       config_path = ""
-      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."${REGISTRY}:5000"]
-          endpoint = ["http://${REGISTRY}:5000"]
 
       [plugins."io.containerd.grpc.v1.cri".registry.auths]
 
@@ -156,6 +153,8 @@ version = 2
       [plugins."io.containerd.grpc.v1.cri".registry.headers]
 
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."${REGISTRY}:5000"]
+          endpoint = ["http://${REGISTRY}:5000"]
 
     [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
       tls_cert_file = ""

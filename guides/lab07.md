@@ -2,7 +2,87 @@
 
 In this lab you are going to perisist data in Kubernetes using PersistenVolumes (PVs), PersistentVolumeClaims (PVCs) and StorageClasses (SCs).
 
-## Install the hostpath CSI driver
+As you did with the CNI plugin, you need to let Kubernetes be able to interact with a storage via a CSI driver. In this lab you are going to use the NFS CSI driver which provides persistent storage backed by a NFS server.
+
+## Create a NFS file share
+
+Open a shell on the `nfs` environment.
+
+1. Install NFS server.
+
+    ```sh
+    apt update && apt install -y nfs-server
+    ```
+
+2. Crate a root NFS directory and set permissions.
+
+    ```sh
+    mkdir /mnt/kube-storage && chown nobody:nogroup /mnt/kube-storage
+    ```
+
+3. Define access for NFS clients in export file.
+
+    ```sh
+    cat << EOF >> /etc/exports
+    /mnt/kube-storage 172.30.10.0/24 (rw,no_subtree_check,no_root_squash)
+    EOF
+    ```
+
+4. Make the NFS share available to clients.
+
+    ```sh
+    exportfs -ar && systemctl enable --now nfs-server
+    ```
+
+## Install NFS client on the Kubernetes worker node
+
+Open a shell on the `k8s-w-01` environment.
+
+1. Install teh NFS client package.
+
+    ```sh
+    apt update && apt install -y nfs-common
+    ```
+
+## Install the NFS CSI driver
+
+Open ashell on the `student` machine.
+
+1. Install the [NFS CSI driver with kubectl](https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-driver-v4.4.0.md).
+
+    ```sh
+    curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/v4.4.0/deploy/install-driver.sh | sh -s v4.4.0 --
+    ```
+
+2. Wait until both `nfs-csi-controller` and `nfs-ci-node` pods are up and running.
+
+    ```sh
+    kubectl get pod -n kube-system
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    NAME                                  READY   STATUS    RESTARTS      AGE
+    csi-nfs-controller-557fb7f77c-v42zf   4/4     Running   0             7m45s
+    csi-nfs-node-vxnfc                    3/3     Running   0             7m45s
+    csi-nfs-node-xk2r7                    3/3     Running   0             7m45s
+    ```
+
+3. Kubernetes API make available a `CSIDriver` resource to (i) ease the discovery of CSI Drivers installed on the cluster; (ii) specify how Kubernetes should interact with the CSI driver. List the CSI drivers.
+
+    ```sh
+    kubectl get CSIDriver
+    ```
+
+    The output is similar to this:
+
+    ```plaintext
+    NAME             ATTACHREQUIRED   PODINFOONMOUNT   STORAGECAPACITY   TOKENREQUESTS   REQUIRESREPUBLISH   MODES        AGE
+    nfs.csi.k8s.io   false            false            false             <unset>         false               Persistent   10m
+    ```
+
+<!-- ## Install the hostpath CSI driver
 
 As you did with the CNI plugin, you need to let Kubernetes be able to interact with a storage via a CSI driver. In this lab you are going to use the hostpath CSI driver which provides persistent storage backed by the host filesystem.
 
@@ -62,13 +142,13 @@ Open a shell on the `student` machine.
     ```plaintext
     NAME                  ATTACHREQUIRED   PODINFOONMOUNT   STORAGECAPACITY   TOKENREQUESTS   REQUIRESREPUBLISH   MODES                  AGE
     hostpath.csi.k8s.io   true             true             false             <unset>         false               Persistent,Ephemeral   45m
-    ```
+    ``` -->
 
 ## Enable dynamic volume provisionig
 
 A cluster administrator can define as many `StorageClass` objects as needed, each specifying a _volume plugin_ (aka `provisioner`) that provisions a volume and the set of parameters to pass to that provisioner when provisioning. A cluster administrator can define and expose multiple flavors of storage (from the same or different storage systems) within a cluster, each with a custom set of parameters. This design also ensures that end users don't have to worry about the complexity and nuances of how storage is provisioned, but still have the ability to select from multiple storage options.
 
-1. Create a StorageClass which refers to the `hostpath.csi.k8s.io` provisioner:
+<!-- 1. Create a StorageClass which refers to the `hostpath.csi.k8s.io` provisioner:
 
     ```sh
     echo '
@@ -81,9 +161,35 @@ A cluster administrator can define as many `StorageClass` objects as needed, eac
     volumeBindingMode: Immediate
     allowVolumeExpansion: true
     ' | kubectl apply -f -
+    ``` -->
+
+1. Set the `NFS_SERVER` environment variable.
+
+    ```sh
+    export NFS_SERVER=<nfs-ip>
     ```
 
-2. Verify the StorageClass has been created
+2. Create a StorageClass which refers to the `nfs.csi.k8s.io` provisioner:
+
+    ```sh
+    cat <<EOF | kubectl apply -f -
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: nfs-csi
+    provisioner: nfs.csi.k8s.io
+    parameters:
+      server: ${NFS_SERVER}
+      share: /mnt/kube-storage
+    reclaimPolicy: Delete
+    volumeBindingMode: Immediate
+    allowVolumeExpansion: true
+    mountOptions:
+      - nfsvers=4.1
+    EOF
+    ```
+
+3. Verify the StorageClass has been created
 
     ```sh
     kubectl get storageclasses
@@ -92,28 +198,28 @@ A cluster administrator can define as many `StorageClass` objects as needed, eac
     The output is similar to this:
 
     ```plaintext
-    NAME              PROVISIONER           RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-    csi-hostpath-sc   hostpath.csi.k8s.io   Delete          Immediate           true                   9s
+    NAME      PROVISIONER      RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+    nfs-csi   nfs.csi.k8s.io   Delete          Immediate           true                   7s
     ```
 
-3. An administrator can mark a specific `StorageClass` as default by adding the `storageclass.kubernetes.io/is-default-class` annotation to it. When a default `StorageClass` exists in a cluster and a user creates a `PersistentVolumeClaim` with `storageClassName` unspecified, the `DefaultStorageClass` admission controller automatically adds the `storageClassName` field pointing to the default storage class.
-Mark the `csi-hostpath-sc` StorageClass as _default_.
+4. An administrator can mark a specific `StorageClass` as default by adding the `storageclass.kubernetes.io/is-default-class` annotation to it. When a default `StorageClass` exists in a cluster and a user creates a `PersistentVolumeClaim` with `storageClassName` unspecified, the `DefaultStorageClass` admission controller automatically adds the `storageClassName` field pointing to the default storage class.
+Mark the `nfs-csi` StorageClass as _default_.
 
     ```sh
-    kubectl annotate storageclass csi-hostpath-sc storageclass.kubernetes.io/is-default-class=true 
+    kubectl annotate storageclass nfs-csi storageclass.kubernetes.io/is-default-class=true 
     ```
 
-4. Now if you show the `csi-hostpath-sc` Storage Class you should see the `(default)` annotation.
+5. Now if you show the `nfs-csi` Storage Class you should see the `(default)` annotation.
 
     ```sh
-    kubectl get storageclass csi-hostpath-sc
+    kubectl get storageclass nfs-csi
     ```
 
 ## Using dynamic provisioning
 
 Users request dynamically provisioned storage by including a storage class in their `PersistentVolumeClaim`.
 
-1. Create a claim that uses the `csi-hostpath-sc` StorageClass.
+1. Create a claim that uses the `nfs-csi` StorageClass.
 
     ```sh
     echo '
@@ -127,7 +233,7 @@ Users request dynamically provisioned storage by including a storage class in th
       resources:
         requests:
           storage: 1Gi
-      storageClassName: csi-hostpath-sc # can be omitted (default class)
+      storageClassName: nfs-csi # can be omitted (default class)
     ' | kubectl apply -f -
     ```
 
@@ -140,8 +246,8 @@ Users request dynamically provisioned storage by including a storage class in th
     The output is similar to this:
 
     ```sh
-    NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM             STORAGECLASS      REASON   AGE
-    pvc-40a54e68-3321-4686-864a-90fbeb0f6067   1Gi        RWO            Delete           Bound    default/csi-pvc   csi-hostpath-sc            4s
+    NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM             STORAGECLASS   REASON   AGE
+    pvc-6a671512-49c7-4af9-a92b-e6e4cd9a7115   1Gi        RWO            Delete           Bound    default/csi-pvc   nfs-csi                 19s
     ```
 
     To list the PVC run the following command.
@@ -152,7 +258,7 @@ Users request dynamically provisioned storage by including a storage class in th
 
 ## Claims as volumes
 
-1. Create a Deployment with a Pod using the claim as a volume.
+1. Create a Deployment with a Pod using the `csi-pvc` claim as a volume.
 
     ```sh
     cat <<EOF | tee csi-app.yaml > /dev/null
@@ -246,7 +352,7 @@ Users request dynamically provisioned storage by including a storage class in th
     [csi-app-9cf586df5-wr4pq] counter: 3
     ```
 
-## Expanding a Persistent Volume Claim
+<!-- ## Expanding a Persistent Volume Claim
 
 A PVC can be expanded if and only if:
 
@@ -263,7 +369,7 @@ The installed CSI driver and the created `StorageClass` enable you to expand PVC
     kubectl patch persistentvolumeclaim csi-pvc -p '{"spec": {"resources": {"requests": {"storage": "2Gi"}}}}'
     ```
 
-2. Wait for a few seconds and then run `kubectl get pvc`. The `CAPACITY` should be increased to `2Gi`.
+2. Wait for a few seconds and then run `kubectl get pvc`. The `CAPACITY` should be increased to `2Gi`. -->
 
 ## Clean up
 

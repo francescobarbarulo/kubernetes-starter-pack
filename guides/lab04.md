@@ -49,7 +49,7 @@ Open a shell in the `k8s-cp-01` environment.
     kubeadm init --config kubeadm-config.yaml
     ```
 
-    If everything worked fine, the output is similar to this:
+    If everything works fine, the output is similar to this:
 
     ```plaintext
     Your Kubernetes control-plane has initialized successfully!
@@ -118,7 +118,7 @@ Open a shell on the `student` machine.
 6. During cluster creation, kubeadm signs the certificate in the `/etc/kubernetes/admin.conf` to have `Subject: O = system:masters, CN = kubernetes-admin`. Copy it in `~/.kube/config` from `k8s-cp-01` environment:
 
     ```sh
-    ls ~/.kube &> /dev/null || mkdir ~/.kube && lxc file pull k8s-cp-01/etc/kubernetes/admin.conf ~/.kube/config
+    mkdir ~/.kube && lxc file pull k8s-cp-01/etc/kubernetes/admin.conf ~/.kube/config
     ```
 
 7. Try to run `kubectl get node` again. The output is simlar to this:
@@ -156,7 +156,7 @@ At the moment, you are able to access the API server because you are using the `
     kubectl get clusterrolebinding cluster-admin -o yaml
     ```
 
- 3. `system:masters` is a break-glass, super user group that bypasses the authorization layer (e.g. RBAC). Sharing the `admin.conf` with additional users is **not recommended**! Instead, you can use the `kubeadm kubeconfig user` command to generate kubeconfig files for additional users. Kubernetes comes with other ClusterRoles, including the `admin` one, which allows admin access. This role is intended to be granted within a namespace using a **RoleBinding**. View the `admin` ClusterRole.
+ 3. `system:masters` is a break-glass, super user group that bypasses the authorization layer (e.g. RBAC). Sharing the `admin.conf` with additional users is **not recommended**! Instead, you can use tools like `openssl` or [`kubeadm kubeconfig user`](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/#kubeconfig-additional-users) command to generate certificates and kubeconfig files for additional users. Kubernetes comes with other ClusterRoles, including the `admin` one, which allows admin access. This role is intended to be granted within a namespace using a **RoleBinding**. View the `admin` ClusterRole.
 
     ```sh
     kubectl get clusterrole admin -o yaml
@@ -178,7 +178,7 @@ Assume you need to assign admin privileges to your developer `jane` in the `defa
     lxc file pull k8s-cp-01/etc/kubernetes/pki/ca.{key,crt} .
     ```
 
-2. Generate jane keys.
+2. Generate `jane` keys.
 
     ```sh
     openssl genrsa -out jane.key 2048
@@ -196,7 +196,7 @@ Assume you need to assign admin privileges to your developer `jane` in the `defa
     openssl x509 -req -in jane.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out jane.crt
     ```
 
-5. Set an environment variable.
+5. Set the `API_SERVER` environment variable.
 
     ```sh
     export API_SERVER=<k8s-cp-01-ip>

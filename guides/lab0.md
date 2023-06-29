@@ -1,7 +1,7 @@
 # Lab 0
 
-The lab is composed by a single Ubuntu 22.04 virtual machine, from now on called `student` machine (`student@lab`).
-On top of it you will find four different isolated environments:
+The lab is composed by a dedicated Ubuntu 22.04 virtual machine, from now on called `student` machine (`student@lab`).
+On top of it you will find five different isolated environments:
 
 | Environment | Shell | Description |
 |---|---|---|

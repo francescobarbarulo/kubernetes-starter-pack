@@ -151,9 +151,9 @@ Assume you have a project codebase hosted on some version control hosting platfo
 
 1. View all the layers of the image with their sizes, including the ones belonging to the base image `node:18-alpine`.
 
-```sh
-docker history getting-started:v1
-```
+    ```sh
+    docker history getting-started:v1
+    ```
 
 ## Challenge 01
 

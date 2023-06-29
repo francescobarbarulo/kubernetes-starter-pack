@@ -151,7 +151,7 @@ Often front-end applications need to be reached from the outside world. The very
 
     ```sh
     NODE_PORT=$(kubectl get services/hello-app -o jsonpath={.spec.ports[0].nodePort})
-    WORKER_NODE_IP=<k8s-w-01-ip>
+    WORKER_NODE_IP=172.30.10.21
     ```
 
     Try to use the IP address of the control-plane node. What do you expect? Yes, it works. When a Service of type `NodePort` is created, Kubernetes bind the Service port to every node of the cluster.

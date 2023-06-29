@@ -1,7 +1,7 @@
 # Lab 0
 
 The lab is composed by a dedicated Ubuntu 22.04 virtual machine, from now on called `student` machine (`student@lab`).
-On top of it you will find five different isolated environments:
+On top of it you will find six different isolated environments:
 
 | Environment | Shell | Description |
 |---|---|---|
@@ -10,6 +10,7 @@ On top of it you will find five different isolated environments:
 | `nfs` | `root@nfs` | NFS server |
 | `k8s-cp-01` | `root@k8s-cp-01` | Kubernetes control-plane node |
 | `k8s-w-01` | `root@k8s-w-01` | Kubernetes worker node |
+| `k8s-w-02` | `root@k8s-w-02` | Kubernetes worker node |
 
 These environments are provided by means of Linux Containers (LXC). Nevertheless you can think of them as physical or virtual machines.
 

@@ -166,7 +166,7 @@ A cluster administrator can define as many `StorageClass` objects as needed, eac
 1. Set the `NFS_SERVER` environment variable.
 
     ```sh
-    export NFS_SERVER=<nfs-ip>
+    export NFS_SERVER=172.30.10.12
     ```
 
 2. Create a StorageClass which refers to the `nfs.csi.k8s.io` provisioner:

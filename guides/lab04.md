@@ -12,7 +12,7 @@ Open a shell in the `k8s-cp-01` environment.
     ```sh
     export K8S_VERSION=1.25.6
     export ARCH=amd64
-    export REGISTRY=<registry-ip>
+    export REGISTRY=172.30.10.11
     ```
 
 1. Prepare the host by installing and configuring prerequisites (e.g. enabling IPv4 forwarding and letting iptables see bridged traffic), a container runtime (`containerd` and `runc`), `kubeadm` and `kubelet`.
@@ -134,7 +134,7 @@ Open a shell on the `student` machine.
     You should now deploy a pod network to the cluster
     ```
 
-    This means that to make the node `Ready` you need to install a CNI plugin responsible for managing the networking for the Kubernetes cluster.
+    This means that to make the node `Ready` you need to install a CNI plugin responsible for managing the networking resources for the Kubernetes cluster.
     However you can interact with the up and running API server with `kubectl`.
 
 ## Kubernetes RBAC authorization management
@@ -199,7 +199,7 @@ Assume you need to assign admin privileges to your developer `jane` in the `defa
 5. Set the `API_SERVER` environment variable.
 
     ```sh
-    export API_SERVER=<k8s-cp-01-ip>
+    export API_SERVER=172.30.10.20
     ```
 
 6. Create a kubeconfig file for user `jane`.

@@ -33,7 +33,7 @@ Open a shell in the `registry` environment.
     registry:2
     ```
 
-4. After a few seconds, open the web browser at `http://<registry-ip>:5000/v2/_catalog`. Use the above credentials when requested. You should see an empty json response:
+4. After a few seconds, open the web browser at [`http://172.30.10.11:5000/v2/_catalog`](http://172.30.10.11:5000/v2/_catalog). Use the above credentials when requested. You should see an empty json response:
 
     ```json
     {"repositories":[]}
@@ -64,7 +64,7 @@ Open a shell in the `dev` environment.
 2. Take note of the `registry` IP address.
 
     ```sh
-    export REGISTRY=<registry-ip>
+    export REGISTRY=172.30.10.11
     ```
 
 3. Configure Docker to contact the `registry` using HTTP.
@@ -101,7 +101,7 @@ Open a shell in the `dev` environment.
     docker push $REGISTRY:5000/getting-started:v2
     ```
 
-8. Check the image is present on the registry by refreshing the web browser at `http://<registry-ip>:5000/v2/_catalog`. You should see a json response like this:
+8. Check the image is present on the registry by refreshing the web browser at [`http://172.30.10.11:5000/v2/_catalog`](http://172.30.10.11:5000/v2/_catalog). You should see a json response like this:
 
     ```json
     {"repositories":["getting-started"]}

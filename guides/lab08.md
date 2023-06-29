@@ -223,4 +223,4 @@ Open a shell on the `student` machine.
     ' | kubectl apply -f -
     ```
 
-    The wordpress is exposed through the Ingress Controller on the port of the ingress service. Get it by `kubectl get service -n ingress-nginx` and open the browser at `http://<k8s-w-01-ip>:<nodePort>`.
+    The wordpress is exposed through the Ingress Controller on the port of the ingress service. Get it by `kubectl get service -n ingress-nginx` and open the browser at `http://172.30.10.21:<nodePort>`.

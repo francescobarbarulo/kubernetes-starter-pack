@@ -41,9 +41,9 @@ Open a shell on the `student` machine.
 
     Note that the Pods you have so far are part of the Kubernetes system itself, therefor they run in a namespace called `kube-system`.
 
-**Note**: DO NOT PROCEDE UNITL THE `k8s-cp-01` IS IN A READY STATE.
-
 ## Add a worker node
+
+⚠️ Do not go ahead until the `k8s-cp-01` is in `Ready` state.
 
 Open a shell in `k8s-cp-01` environment.
 
@@ -62,7 +62,7 @@ Like the control-plane node, the new worker node must be prepared installing and
     ```sh
     export K8S_VERSION=1.25.6
     export ARCH=amd64
-    export REGISTRY=<registry-ip>
+    export REGISTRY=172.30.10.11
     ```
 
 3. Install required tools.
@@ -79,9 +79,10 @@ Open a shell on the `student` machine.
     ```sh
     kubectl get nodes
     ```
-**Note**: DO NOT PROCEDE UNITL THE `k8s-w-01` IS IN A READY STATE.
 
 ## Deploy an application
+
+⚠️ Do not go ahead until the `k8s-cp-01` is in `Ready` state.
 
 Open a shell on the `student` machine.
 

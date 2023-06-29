@@ -14,7 +14,7 @@ Open a shell in the `dev` environment.
     docker run --name myapp-v1 -d -p 8080:3000 getting-started:v1
     ```  
 
-2. After a few seconds, open the web browser in the `student` machine to `http://<dev-ip>:8080` and you should see your app.
+2. After a few seconds, open the web browser in the `student` machine to [`http://172.30.10.10:8080`](http://172.30.10.10:8080) and you should see your app.
     
     **Tip**: Get the `dev` IP address by running `lxc list` on the `student` machine opening another terminal window.
 

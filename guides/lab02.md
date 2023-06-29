@@ -15,8 +15,6 @@ Open a shell in the `dev` environment.
     ```  
 
 2. After a few seconds, open the web browser in the `student` machine to [`http://172.30.10.10:8080`](http://172.30.10.10:8080) and you should see your app.
-    
-    **Tip**: Get the `dev` IP address by running `lxc list` on the `student` machine opening another terminal window.
 
 3. In the application add an item or two and see that it works as you expect. You can mark items as complete and remove items. Your frontend is successfully storing items in the backend.
 

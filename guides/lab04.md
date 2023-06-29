@@ -5,9 +5,9 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
 
 ## Initialize the control-plane node
 
-Open a shell in the `k8s-cp-01` environment.
+🖥️ Open a shell in the `k8s-cp-01` environment.
 
-1. Set some environment variables.
+1. Set some environment variables in order to download the right version and configure correctly all the components.
 
     ```sh
     export K8S_VERSION=1.25.6
@@ -15,12 +15,12 @@ Open a shell in the `k8s-cp-01` environment.
     export REGISTRY=172.30.10.11
     ```
 
-1. Prepare the host by installing and configuring prerequisites (e.g. enabling IPv4 forwarding and letting iptables see bridged traffic), a container runtime (`containerd` and `runc`), `kubeadm` and `kubelet`.
+2. Prepare the host by installing and configuring prerequisites (e.g. enabling IPv4 forwarding and letting iptables see bridged traffic), a container runtime (`containerd` and `runc`), `kubeadm` and `kubelet`.
     ```sh
     curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lxd/node-prep.sh | sh
     ```
 
-2. Create the configuration file for kubeadm.
+3. Create the configuration file for kubeadm.
 
     ```sh
     cat <<EOF | tee ~/kubeadm-config.yaml > /dev/null
@@ -43,7 +43,7 @@ Open a shell in the `k8s-cp-01` environment.
     EOF
     ```
 
-3. Boostrap the Kubernetes control-plane components.
+4. Boostrap the Kubernetes control-plane components.
 
     ```sh
     kubeadm init --config kubeadm-config.yaml
@@ -76,16 +76,16 @@ Open a shell in the `k8s-cp-01` environment.
 
 ## Access the Kubernetes cluster with kubectl
 
-Open a shell on the `student` machine.
+🖥️ Open a shell in the `student` machine.
 
-1. Set again the environment variables.
+1. Set some environment variables in order to download the correct version of `kubectl`.
 
     ```sh
     export K8S_VERSION=1.25.6
     export ARCH=amd64
     ``` 
 
-1. Install `kubectl`.
+2. Install `kubectl`.
 
     ```sh
     curl -sLO https://dl.k8s.io/release/v${K8S_VERSION}/bin/linux/${ARCH}/kubectl
@@ -93,14 +93,14 @@ Open a shell on the `student` machine.
     rm -f kubectl
     ```
 
-2. Enable kubectl shell autompletion in the current session.
+3. Enable kubectl shell autompletion in the current session.
 
     ```sh
     kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
     source ~/.bashrc
     ```
 
-5. Try to connect to the API server and check the nodes status.
+4. Try to connect to the API server and check the nodes status.
 
     ```sh
     kubectl get node
@@ -115,20 +115,20 @@ Open a shell on the `student` machine.
     This is due to the lack of a kubeconfig file. The `kubectl` command-line tool uses kubeconfig files to find the information it needs to choose a cluster and communicate with the API server of a cluster.
     By default, `kubectl` looks for the `~/.kube/config` file. You can specify other kubeconfig files by setting the `KUBECONFIG` environment variable. 
     
-6. During cluster creation, kubeadm signs the certificate in the `/etc/kubernetes/admin.conf` to have `Subject: O = system:masters, CN = kubernetes-admin`. Copy it in `~/.kube/config` from `k8s-cp-01` environment:
+5. During cluster creation, kubeadm signs the certificate in the `/etc/kubernetes/admin.conf` to have `Subject: O = system:masters, CN = kubernetes-admin`. Copy it in `~/.kube/config` from `k8s-cp-01` environment:
 
     ```sh
     mkdir ~/.kube && lxc file pull k8s-cp-01/etc/kubernetes/admin.conf ~/.kube/config
     ```
 
-7. Try to run `kubectl get node` again. The output is simlar to this:
+6. Try to run `kubectl get node` again. The output is simlar to this:
 
     ```plaintext
     NAME        STATUS     ROLES           AGE   VERSION
     k8s-cp-01   NotReady   control-plane   1m   v1.25.6
     ```
 
-    As you see, the node is in the `NotReady` status. From the end of the `kubeadm init` output you may have seen the statement:
+    As you see, the node is in the `NotReady` status. From the end of the `kubeadm init` output, in the `k8s-cp-01` environment, you may have seen the statement:
 
     ```plaintext
     You should now deploy a pod network to the cluster

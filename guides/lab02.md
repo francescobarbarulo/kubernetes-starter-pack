@@ -6,7 +6,7 @@ Finally you will connect it to a containerized mysql database used to store the 
 
 ## Expose the application
 
-Open a shell in the `dev` environment.
+🖥️ Open a shell in the `dev` environment.
 
 1. Start the application container, but this time adding the `-p` flag. The *publish* flag is used to create a mapping between the host's port `8080` to the container's port `3000`. Without the port mapping, you wouldn't be able to access the application even if you specified it in the `Dockerfile`.
 
@@ -20,7 +20,7 @@ Open a shell in the `dev` environment.
 
 ## Update the source code
 
-Open a shell in the `dev` environment.
+🖥️ Open a shell in the `dev` environment.
 
 1. In the `src/static/js/app.js` file, update line 56 to use the new empty text:
 
@@ -167,7 +167,7 @@ There are two ways to put a container on a network: (i) Assign it at start or (i
 
     > `mysql -u root -p` is the command executed inside the `mysql` container.
 
-    When the password prompt comes up, type in __secret__. In the MySQL shell, list the databases and verify you see the `todos` database.
+    When the password prompt comes up, type in `secret`. In the MySQL shell, list the databases and verify you see the `todos` database.
 
     ```mysql
     SHOW DATABASES;
@@ -241,7 +241,7 @@ Let's connect the todo app to MySQL.
 
 3. Open the app in your browser and add a few items to your todo list.
 
-4. Connect to the mysql database and prove that the items are being written to the database. Remember, the password is __secret__.
+4. Connect to the mysql database and prove that the items are being written to the database. Remember, the password is `secret`.
 
     ```sh
     docker exec -it mysql mysql -p todos

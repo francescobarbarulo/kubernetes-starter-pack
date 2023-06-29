@@ -6,7 +6,7 @@ In this lab you are going to deploy a private registry used to store your contai
 
 Docker provides a containerized local registry that can be started using the `docker run` command. You will also configure the registry server by providing native basic authentication.
 
-Open a shell in the `registry` environment.
+🖥️ Open a shell in the `registry` environment.
 
 1. Install Docker Engine:
 
@@ -14,7 +14,7 @@ Open a shell in the `registry` environment.
     curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/docker-install.sh | sh
     ```
 
-2. Create a password file tool with one entry for the user `testuser`, with password `testpassword`, using the `htpasswd` tool provided in the `httpd` image:
+2. Create a password file with one entry for the user `testuser`, with password `testpassword`, using the `htpasswd` tool provided in the `httpd` image:
     ```sh
     mkdir auth && docker run \
     --entrypoint htpasswd \
@@ -43,7 +43,7 @@ Open a shell in the `registry` environment.
 
 Once you built the app container image, you are ready to push it to your container registry.
 
-Open a shell in the `dev` environment.
+🖥️ Open a shell in the `dev` environment.
 
 1. Try running the push command:
     ```sh

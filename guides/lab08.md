@@ -4,7 +4,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
 
 ## Deploy the MySQL database
 
-Open a shell on the `student` machine.
+🖥️ Open a shell in the `student` machine.
 
 1. Create a secret to store credentials to access the mysql.
 

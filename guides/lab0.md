@@ -34,12 +34,13 @@ These environments are provided by means of Linux Containers (LXC). Nevertheless
   ```sh
   lxc file pull <env>/<path> <student host path>
   ```
+  > It acts as `scp`
 
 ## Notes
 
-* During the lab, be careful to execute the commands provided in the guides in the right environment.
+* During the lab, be careful to execute the commands provided in the guides in the right environment. When you find a monitor emoji (🖥️) you are required to switch environment.
 
-* When you find a string between angle brackets, you need to replace it with the right value, usually self-explanatory.
+* When you find a string between angle brackets, you need to replace it with the right value, hopefully self-explanatory.
 
 ## Next
 

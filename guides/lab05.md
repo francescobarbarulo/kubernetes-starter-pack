@@ -4,7 +4,7 @@ In this lab you are going to install the Cilium CNI plugin, add a worker node to
 
 ## Install a CNI plugin
 
-Open a shell on the `student` machine.
+🖥️ Open a shell in the `student` machine.
 
 1. Kubernetes is not opinionated, it lets you choose your own CNI solution. Until a CNI plugin is installed the cluster will be inoperable. List the running Pods in all namespaces (`-A`):
 
@@ -45,15 +45,15 @@ Open a shell on the `student` machine.
 
 ⚠️ Do not go ahead until the `k8s-cp-01` is in `Ready` state.
 
-Open a shell in `k8s-cp-01` environment.
+🖥️ Open a shell in `k8s-cp-01` environment.
 
-1. Create a new token and print the join command.
+1. Create a new token and print the join command. Save it somewhere because it will need in the next steps.
 
     ```sh
     kubeadm token create --print-join-command
     ```
 
-Open a shell in the `k8s-w-01` environment.
+🖥️ Open a shell in the `k8s-w-01` environment.
 
 Like the control-plane node, the new worker node must be prepared installing and configuring prerequisites (e.g. enabling IPv4 forwarding and letting iptables see bridged traffic), a container runtime (`containerd` and `runc`), `kubeadm` and `kubelet`.
 
@@ -72,9 +72,9 @@ Like the control-plane node, the new worker node must be prepared installing and
 
 4. Join the worker node to the exsisting cluster by running the `kubeadm join` command printed at step 1.
 
-Open a shell on the `student` machine.
+🖥️ Open a shell in the `student` machine.
 
-1. Verify the the newly joined worker node is in `Ready` state.
+5. Verify the the newly joined worker node is in `Ready` state.
 
     ```sh
     kubectl get nodes
@@ -84,7 +84,7 @@ Open a shell on the `student` machine.
 
 ⚠️ Do not go ahead until the `k8s-w-01` is in `Ready` state.
 
-Open a shell on the `student` machine.
+🖥️ Open a shell in the `student` machine.
 
 1. Let’s deploy our first app on Kubernetes with the kubectl create deployment command. You need to provide the deployment name and app image location.
 

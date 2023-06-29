@@ -4,7 +4,7 @@ In this lab you are going to install the Docker Engine, run some containers base
 
 ## Install Docker Engine
 
-Open a shell in the `dev` environment.
+🖥️ Open a shell in the `dev` environment.
 
 1. Launch the installation script which will follow the [repository installation method](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
 

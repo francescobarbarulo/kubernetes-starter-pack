@@ -12,7 +12,7 @@ So you have pods running the `hello-app` in a flat, cluster wide, address space.
 
 These are problems a Service solves.
 
-Open a shell on the `student` machine.
+🖥️ Open a shell in the `student` machine.
 
 1. Create a service for your `hello-app` replicas by exposing the deployment which forwards every request arriving on port `80` to port `8080` of the endpoints.
 
@@ -154,8 +154,6 @@ Often front-end applications need to be reached from the outside world. The very
     WORKER_NODE_IP=172.30.10.21
     ```
 
-    Try to use the IP address of the control-plane node. What do you expect? Yes, it works. When a Service of type `NodePort` is created, Kubernetes bind the Service port to every node of the cluster.
-
 6. Use curl to make an HTTP request specifying the IP address and port of the worker node.
 
     ```sh
@@ -163,6 +161,15 @@ Often front-end applications need to be reached from the outside world. The very
     ```
 
     Hooray! The application is now reachable from the world.
+
+7. Try to use the IP address of the control-plane node. What do you expect? 
+
+    ```sh
+    CP_NODE_IP=172.30.10.20
+    curl http://$CP_NODE_IP:$NODE_PORT
+    ```
+
+    Yes, it works. When a Service of type `NodePort` is created, Kubernetes binds the Service port to **every** node of the cluster.
 
 7. Clean up deleting both the `hello-app` Deployment and the Service.
 

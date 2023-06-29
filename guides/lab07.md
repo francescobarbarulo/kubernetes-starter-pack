@@ -6,9 +6,9 @@ As you did with the CNI plugin, you need to let Kubernetes be able to interact w
 
 ## Create a NFS file share
 
-Open a shell on the `nfs` environment.
+🖥️ Open a shell in the `nfs` environment.
 
-1. Install NFS server.
+1. Install `nfs-server` package.
 
     ```sh
     apt update && apt install -y nfs-server
@@ -24,7 +24,7 @@ Open a shell on the `nfs` environment.
 
     ```sh
     cat << EOF >> /etc/exports
-    /mnt/kube-storage 172.30.10.0/24 (rw,no_subtree_check,no_root_squash)
+    /mnt/kube-storage 172.30.10.0/24(rw,no_subtree_check,no_root_squash)
     EOF
     ```
 
@@ -36,7 +36,7 @@ Open a shell on the `nfs` environment.
 
 ## Install NFS client on the Kubernetes worker node
 
-Open a shell on the `k8s-w-01` environment.
+🖥️ Open a shell in the `k8s-w-01` environment.
 
 1. Install teh NFS client package.
 
@@ -46,15 +46,15 @@ Open a shell on the `k8s-w-01` environment.
 
 ## Install the NFS CSI driver
 
-Open ashell on the `student` machine.
+🖥️ Open a shell in the `student` machine.
 
 1. Install the [NFS CSI driver with kubectl](https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-driver-v4.4.0.md).
 
     ```sh
-    curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/v4.4.0/deploy/install-driver.sh | sh -s v4.4.0 --
+    curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/v4.4.0/deploy/install-driver.sh | bash -s v4.4.0 --
     ```
 
-2. Wait until both `nfs-csi-controller` and `nfs-ci-node` pods are up and running.
+2. Wait until both `csi-nfs-controller` and `csi-nfs-node` pods are up and running.
 
     ```sh
     kubectl get pod -n kube-system
@@ -86,7 +86,7 @@ Open ashell on the `student` machine.
 
 As you did with the CNI plugin, you need to let Kubernetes be able to interact with a storage via a CSI driver. In this lab you are going to use the hostpath CSI driver which provides persistent storage backed by the host filesystem.
 
-Open a shell on the `student` machine.
+Open a shell in the `student` machine.
 
 1. Install the CSI driver with the required RBAC rules in the `csi` namespace:
 
@@ -163,7 +163,7 @@ A cluster administrator can define as many `StorageClass` objects as needed, eac
     ' | kubectl apply -f -
     ``` -->
 
-1. Set the `NFS_SERVER` environment variable.
+1. Set the `NFS_SERVER` environment variable used in the next steps.
 
     ```sh
     export NFS_SERVER=172.30.10.12
@@ -183,7 +183,6 @@ A cluster administrator can define as many `StorageClass` objects as needed, eac
       share: /mnt/kube-storage
     reclaimPolicy: Delete
     volumeBindingMode: Immediate
-    allowVolumeExpansion: true
     mountOptions:
       - nfsvers=4.1
     EOF

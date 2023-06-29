@@ -23,7 +23,8 @@ sleep 10
 for instance in $INSTANCES
 
 do
-  lxc exec $instance -- cloud-init status --wait
-  lxc exec $instance -- apt install -y linux-image-$(uname -r) > /dev/null
+  name=$(echo $instance | cut -d ":" -f 1)
+  lxc exec $name -- cloud-init status --wait
+  lxc exec $name -- apt install -y linux-image-$(uname -r) > /dev/null
 done
 

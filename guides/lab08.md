@@ -224,3 +224,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
     ```
 
     The wordpress is exposed through the Ingress Controller on the port of the ingress service. Get it by `kubectl get service -n ingress-nginx` and open the browser at `http://172.30.10.21:<nodePort>`.
+
+    ## Next
+
+    [Challenge](./challenge.md)

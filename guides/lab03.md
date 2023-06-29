@@ -39,8 +39,6 @@ Open a shell in the `registry` environment.
     {"repositories":[]}
     ```
 
-    **Tip**: Get the `registry` IP address by running `lxc list` on the `student` machine opening another terminal window.
-
 ## Push the image to the registry
 
 Once you built the app container image, you are ready to push it to your container registry.

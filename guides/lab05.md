@@ -82,7 +82,7 @@ Open a shell on the `student` machine.
 
 ## Deploy an application
 
-⚠️ Do not go ahead until the `k8s-cp-01` is in `Ready` state.
+⚠️ Do not go ahead until the `k8s-w-01` is in `Ready` state.
 
 Open a shell on the `student` machine.
 

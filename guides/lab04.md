@@ -225,7 +225,7 @@ Assume you need to assign admin privileges to your developer `jane` in the `defa
         certificate-authority-data: ${CA_CRT}
         server: https://${API_SERVER}:6443
     contexts:
-    - name: jane@kubernetes
+    - name: ${USERNAME}@kubernetes
       context:
         cluster: kubernetes
         user: ${USERNAME}

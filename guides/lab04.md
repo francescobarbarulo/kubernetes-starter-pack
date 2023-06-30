@@ -170,6 +170,8 @@ At the moment, you are able to access the API server because you are using the `
 
     **Note**: This RoleBinding will be created in the `default` namespace. Thus, user belonging to `admin` group will have admin access only to the `default` namespace.
 
+## Create a kubeconfig file for a new user
+
 Assume you need to assign admin privileges to your developer `jane` in the `default` namespace. You need to create a signed certificate for `Subject: O = admin, CN = jane`. To do this you need the root CA certificate of the Kubernetes instance.
 
 1. Copy the key and the certificate from the control-plane node to the `student` machine.
@@ -178,40 +180,45 @@ Assume you need to assign admin privileges to your developer `jane` in the `defa
     lxc file pull k8s-cp-01/etc/kubernetes/pki/ca.{key,crt} .
     ```
 
+2. Set the `USERNAME` environment variable to use in the next steps.
+
+    ```sh
+    export USERNAME=jane
+    ```
 2. Generate `jane` keys.
 
     ```sh
-    openssl genrsa -out jane.key 2048
+    openssl genrsa -out $USERNAME.key 2048
     ```
 
 3. Generate a *Certificate Signing Request*.
 
     ```sh
-    openssl req -new -key jane.key -subj "/CN=jane/O=admin" -out jane.csr
+    openssl req -new -key $USERNAME.key -subj "/CN=$USERNAME/O=admin" -out $USERNAME.csr
     ```
 
 4. Create and sign the certificate with the Kubernetes CA key.
 
     ```sh
-    openssl x509 -req -in jane.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out jane.crt
+    openssl x509 -req -in $USERNAME.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out $USERNAME.crt
     ```
 
-5. Set the `API_SERVER` environment variable.
+5. Set some environment variables to create the kubeconfig file.
 
     ```sh
     export API_SERVER=172.30.10.20
+    export CA_CRT=$(cat ca.crt | base64 -w 0)
+    export USER_CRT=$(cat ${USERNAME}.crt | base64 -w 0)
+    export USER_KEY=$(cat ${USERNAME}.key | base64 -w 0)
     ```
 
 6. Create a kubeconfig file for user `jane`.
 
     ```sh
-    export CA_CRT=$(cat ca.crt | base64 -w 0)
-    export JANE_CRT=$(cat jane.crt | base64 -w 0)
-    export JANE_KEY=$(cat jane.key | base64 -w 0)
-    cat <<EOF | tee jane-config > /dev/null
+    cat <<EOF | tee $USERNAME-config > /dev/null
     apiVersion: v1
     kind: Config
-    current-context: jane@kubernetes
+    current-context: ${USERNAME}@kubernetes
     clusters:
     - name: kubernetes
       cluster:
@@ -221,20 +228,19 @@ Assume you need to assign admin privileges to your developer `jane` in the `defa
     - name: jane@kubernetes
       context:
         cluster: kubernetes
-        user: jane
-        namespace: default
+        user: ${USERNAME}
     users:
-    - name: jane
+    - name: ${USERNAME}
       user:
-        client-certificate-data: ${JANE_CRT}
-        client-key-data: ${JANE_KEY}
+        client-certificate-data: ${USER_CRT}
+        client-key-data: ${USER_KEY}
     EOF
     ```
 
 5. Set the `KUBECONFIG` environment variable to the just created kubeconfig file.
 
     ```sh
-    export KUBECONFIG=jane-config
+    export KUBECONFIG=$USERNAME-config
     ```
 
 6. View the generated kubeconfig file.

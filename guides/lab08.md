@@ -6,13 +6,19 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
 
 🖥️ Open a shell in the `student` machine.
 
-1. Create a secret to store credentials to access the mysql.
+1. Create a new namespace.
 
     ```sh
-    kubectl create secret generic mysql-creds --from-literal=user=wordpress --from-literal=password=secret123 --from-literal=db=wordpress
+    kubectl create namespace wordpress-mysql
     ```
 
-2. Create a Service resource for the database instance. Since the database is a stateful application it recommended to use a headless service.
+2. Create a secret to store credentials to access the mysql.
+
+    ```sh
+    kubectl create secret generic mysql-creds --from-literal=user=wordpress --from-literal=password=secret123 --from-literal=db=wordpress --namespace wordpress-mysql
+    ```
+
+3. Create a Service resource for the database instance. Since the database is a stateful application it recommended to use a headless service.
 
     ```sh
     echo '
@@ -20,6 +26,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
     kind: Service
     metadata:
       name: mysql
+      namespace: wordpress-mysql
       labels:
         app: wordpress
     spec:
@@ -33,7 +40,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
     ' | kubectl apply -f -
     ```
 
-3. Create the `mysql` StatefulSet setting the required `MYSQL_ROOT_PASSWORD` environment variable using the secret created ast step 1.
+4. Create the `mysql` StatefulSet setting the required `MYSQL_ROOT_PASSWORD` environment variable using the secret created ast step 1.
 
     ```sh
     echo '
@@ -41,6 +48,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
     kind: StatefulSet
     metadata:
       name: mysql
+      namespace: wordpress-mysql
       labels:
         app: wordpress
     spec:
@@ -104,6 +112,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
     kind: PersistentVolumeClaim
     metadata:
       name: wordpress-data
+      namespace: wordpress-mysql
       labels:
         app: wordpress
     spec:
@@ -125,6 +134,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
     kind: Deployment
     metadata:
       name: wordpress
+      namespace: wordpress-mysql
       labels:
         app: wordpress
     spec:
@@ -186,6 +196,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
     kind: Service
     metadata:
       name: wordpress
+      namespace: wordpress-mysql
       labels:
         app: wordpress
     spec:
@@ -206,6 +217,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
     kind: Ingress
     metadata:
       name: wordpress-ingress
+      namespace: wordpress-mysql
       labels:
         app: wordpress
     spec:
@@ -225,6 +237,14 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
 
     The wordpress is exposed through the Ingress Controller on the port of the ingress service. Get it by `kubectl get service -n ingress-nginx` and open the browser at `http://172.30.10.21:<nodePort>`.
 
-    ## Next
+## Clean up
 
-    [Challenge](./challenge.md)
+Because you created all resources in a separate namespace, you can delete them simply by deleting the namespace.
+
+```sh
+kubectl delete namespace wordpress-mysql
+```
+
+## Next
+
+[Challenge](./challenge.md)

@@ -271,7 +271,7 @@ Assume you need to assign admin privileges to your developer `jane` in the `defa
     kubectl config view
     ```
 
-7. Verify `jane` can create namespaced resources (e.g. Roles):
+7. Verify `jane` can create Role resources in the `default` namespace:
 
     ```sh
     kubectl auth can-i create roles
@@ -283,18 +283,19 @@ Assume you need to assign admin privileges to your developer `jane` in the `defa
     yes
     ```
 
-    But `jane` can not list cluster scoped resources (e.g. Nodes):
+    But `jane` can not create Role resources in the `kube-system` namespace:
 
     ```sh
-    kubectl auth can-i get nodes
+    kubectl auth can-i create roles --namespace kube-system
     ```
   
     The output is similar to this:
 
     ```plaintext
-    Warning: resource 'nodes' is not namespace scoped
     no
     ```
+
+    This is because you created a RoleBinding between the `admin` ClusterRole and the `admin` group **only** in the `default` namespace.
 
 8. Unset the `KUBECONFIG` environment variable.
 

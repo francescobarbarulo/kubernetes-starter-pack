@@ -16,6 +16,8 @@ In this lab you are going to install the Docker Engine, run some containers base
 
 Now you are ready to run your first container using the Docker CLI.
 
+🖥️ Open a shell in the `dev` environment.
+
 1. Pull the `hello-world` image from the Docker Hub. Remember that if you do not specify the registry endpoint before the image name, Docker will pull the image from the default registry (`registry-1.docker.io`).
 
     ```sh
@@ -110,6 +112,8 @@ Now you are ready to run your first container using the Docker CLI.
 
 Assume you have a project codebase hosted on some version control hosting platform like GitHub.
 
+🖥️ Open a shell in the `dev` environment.
+
 1. Clone the app repository and change the directory to the `app` directory.
 
     ```sh
@@ -148,6 +152,8 @@ Assume you have a project codebase hosted on some version control hosting platfo
     ```
 
 ## Explore the image layers
+
+🖥️ Open a shell in the `dev` environment.
 
 1. View all the layers of the image with their sizes, including the ones belonging to the base image `node:18-alpine`.
 

@@ -159,6 +159,8 @@ Like the control-plane node, the new worker node must be prepared installing and
 
 In order to facilitate more load, you may need to scale up the number of replicas for a microservice.
 
+🖥️ Open a shell in the `student` machine.
+
 1. Scale the deployment by running:
 
     ```sh
@@ -186,6 +188,8 @@ In order to facilitate more load, you may need to scale up the number of replica
     ```
 
 ## Deploy a new version of the application
+
+🖥️ Open a shell in the `student` machine.
 
 1. To update the image of the application to version 2 run:
 
@@ -224,6 +228,8 @@ In order to facilitate more load, you may need to scale up the number of replica
     ```
 
 ## Rolling back a deployment
+
+🖥️ Open a shell in the `student` machine.
 
 1. Suppose that you made a typo while updating the Deployment, by putting the image name as `hello-app:2.1` instead of `hello-app:2.0`.
 

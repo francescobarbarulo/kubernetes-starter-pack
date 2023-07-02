@@ -104,6 +104,8 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
 
 ## Deploy Wordpress application
 
+🖥️ Open a shell in the `student` machine.
+
 1. Create a PVC for Wordpress configuration data.
 
     ```sh
@@ -239,11 +241,13 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
 
 ## Clean up
 
-Because you created all resources in a separate namespace, you can delete them simply by deleting the namespace.
+🖥️ Open a shell in the `student` machine.
 
-```sh
-kubectl delete namespace wordpress-mysql
-```
+1. Because you created all resources in a separate namespace, you can delete them simply by deleting the namespace.
+
+    ```sh
+    kubectl delete namespace wordpress-mysql
+    ```
 
 ## Next
 

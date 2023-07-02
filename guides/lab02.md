@@ -84,6 +84,8 @@ With the database being a single file, if you can persist that file on the host 
 
 As mentioned, you are going to use a named volume. Think of a named volume as simply a bucket of data. Docker maintains the physical location on the disk and you only need to remember the name of the volume. Every time you use the volume, Docker will make sure the correct data is provided.
 
+🖥️ Open a shell in the `dev` environment.
+
 1. Create a volume by using the docker volume create command.
 
     ```sh
@@ -114,17 +116,16 @@ As mentioned, you are going to use a named volume. Think of a named volume as si
     docker rm -f myapp
     ```
 
+8. A lot of people frequently ask "Where is Docker actually storing my data when I use a named volume?" If you want to know, use the following command.
+
+    ```sh
+    docker volume inspect todo-db
+    ```
+
+    The `Mountpoint` is the actual location on the disk where the data is stored. Note that on most machines, you will need to have root access to access this directory from the host. But, that’s where it is!
+
 Hooray! You’ve now learned how to persist data!
 
-## Dive into the volume
-
-A lot of people frequently ask "Where is Docker actually storing my data when I use a named volume?" If you want to know, you can use the docker volume inspect command.
-
-```sh
-docker volume inspect todo-db
-```
-
-The `Mountpoint` is the actual location on the disk where the data is stored. Note that on most machines, you will need to have root access to access this directory from the host. But, that’s where it is!
 
 ## Container Networking
 
@@ -135,6 +136,8 @@ Remember that containers, by default, run in isolation and don’t know anything
 ## Start MySQL
 
 There are two ways to put a container on a network: (i) Assign it at start or (ii) connect an existing container. For now, you will create the network first and attach the MySQL container at startup.
+
+🖥️ Open a shell in the `dev` environment.
 
 1. Create the network.
     
@@ -206,6 +209,8 @@ The todo app supports the setting of a few environment variables to specify MySQ
 * `MYSQL_DB` - the database to use once connected
 
 Let's connect the todo app to MySQL.
+
+🖥️ Open a shell in the `dev` environment.
 
 1. You'll specify each of the environment variables above with the `-e` flag, as well as connect the container to the app network.
 

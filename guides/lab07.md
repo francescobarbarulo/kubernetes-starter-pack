@@ -163,6 +163,8 @@ A cluster administrator can define as many `StorageClass` objects as needed, eac
     ' | kubectl apply -f -
     ``` -->
 
+🖥️ Open a shell in the `student` machine.
+
 1. Set the `NFS_SERVER` environment variable used in the next steps.
 
     ```sh
@@ -218,6 +220,8 @@ Mark the `nfs-csi` StorageClass as _default_.
 
 Users request dynamically provisioned storage by including a storage class in their `PersistentVolumeClaim`.
 
+🖥️ Open a shell in the `student` machine.
+
 1. Create a claim that uses the `nfs-csi` StorageClass.
 
     ```sh
@@ -256,6 +260,8 @@ Users request dynamically provisioned storage by including a storage class in th
     ```
 
 ## Claims as volumes
+
+🖥️ Open a shell in the `student` machine.
 
 1. Create a Deployment with a Pod using the `csi-pvc` claim as a volume.
 
@@ -371,6 +377,8 @@ The installed CSI driver and the created `StorageClass` enable you to expand PVC
 2. Wait for a few seconds and then run `kubectl get pvc`. The `CAPACITY` should be increased to `2Gi`. -->
 
 ## Clean up
+
+🖥️ Open a shell in the `student` machine.
 
 1. Delete Deployment and PVC resources.
 

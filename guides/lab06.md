@@ -78,6 +78,8 @@ How are Services implemented? The default Kubernetes implementation is to let th
 
 Kubernetes offers a DNS cluster addon Service that automatically assigns dns names to other Services. It came up when you istalled the CNI plugin.
 
+🖥️ Open a shell in the `student` machine.
+
 1. Let's run another curl application to test this:
 
     ```sh
@@ -103,6 +105,8 @@ Kubernetes offers a DNS cluster addon Service that automatically assigns dns nam
 ## Expose the application publicly
 
 Often front-end applications need to be reached from the outside world. The very basic solution is to use a `NodePort` service.
+
+🖥️ Open a shell in the `student` machine.
 
 1. Delete the ClusterIP service you previously created.
 
@@ -189,6 +193,8 @@ Unlike other types of controllers which run as part of the kube-controller-manag
 
 There are several open-source Ingress Controller implementations. You are going to deploy the [NGINX ingress controller](https://kubernetes.github.io/ingress-nginx/).
 
+🖥️ Open a shell in the `student` machine.
+
 1. Deploy the ingress controller.
 
     ```sh
@@ -238,6 +244,8 @@ There are several open-source Ingress Controller implementations. You are going 
 A fanout configuration routes traffic from a single IP address to more than one Service, based on the HTTP URI being requested.
 
 Now you are going to create two Deployments of different versions of the same application with each respective Services. Both of them will be accessible through the Ingress Controller at path respectively `/v1` and `/v2`.
+
+🖥️ Open a shell in the `student` machine.
 
 1. Create the `v1` Deployment.
 
@@ -325,6 +333,8 @@ Now you are going to create two Deployments of different versions of the same ap
     ```
 
 ## Clean up
+
+🖥️ Open a shell in the `student` machine.
 
 1. Delete Deployment and Service resources you created in the steps before.
 

@@ -137,10 +137,30 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
     This means that to make the node `Ready` you need to install a CNI plugin responsible for managing the networking resources for the Kubernetes cluster.
     However you can interact with the up and running API server with `kubectl`.
 
+## Kubernetes Resources
+
+Kubernetes has a powerful REST-based API. `kubectl` makes API calls on your behalf, responding to typical HTTP verbs (`GET`, `POST`, `DELETE`).
+A *resource* is an endpoint in the Kubernetes API.
+
+🖥️ Open a shell in the `student` machine.
+
+1. View all the resources you can manage in a default Kubernetes installation.
+
+    ```sh
+    kubectl api-resources
+    ```
+
+    > Some of the objects have `SHORTNAMES`, which makes using them on the command line much easier.
+
+    This list can be extended by adding *Custom Resource Definitions* (CRDs), making Kubernetes modular.
+
+
 ## Kubernetes RBAC authorization management
 
 Kubernetes uses the Role-based access control (RBAC) method to regulate access to the cluster.
-At the moment, you are able to access the API server because you are using the `admin.conf` kubeconfig file that uses a signed certificate for `Subject: O = system:masters, CN = kubernetes-admin`. Kubernetes come with a ClusterRoleBinding named `cluster-admin` that binds the `cluster-admin` ClusterRole with the `system:masters` group. 
+At the moment, you are able to access the API server because you are using the `admin.conf` kubeconfig file that uses a signed certificate for `Subject: O = system:masters, CN = kubernetes-admin`. Kubernetes come with a ClusterRoleBinding named `cluster-admin` that binds the `cluster-admin` ClusterRole with the `system:masters` group.
+
+🖥️ Open a shell in the `student` machine.
 
 1. Let's inspect the built-in `cluster-admin` ClusterRole.
 
@@ -173,6 +193,8 @@ At the moment, you are able to access the API server because you are using the `
 ## Create a kubeconfig file for a new user
 
 Assume you need to assign admin privileges to your developer `jane` in the `default` namespace. You need to create a signed certificate for `Subject: O = admin, CN = jane`. To do this you need the root CA certificate of the Kubernetes instance.
+
+🖥️ Open a shell in the `student` machine.
 
 1. Copy the key and the certificate from the control-plane node to the `student` machine.
 

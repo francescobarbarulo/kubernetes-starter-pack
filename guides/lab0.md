@@ -36,9 +36,9 @@ On top of it you will find six different isolated environments provided by means
 
 ## Notes
 
-* During the lab, be careful to execute the commands provided in the guides in the right environment. When you find a monitor emoji (🖥️) you are required to switch environment.
+* During the lab, be careful to execute the commands provided in the guides in the right environment. It is always specified at the beginning of each section by a monitor emoji (🖥️).
 
-* When you find a string between angle brackets (e.g. `<something>`), you need to replace it with the right value, hopefully self-explanatory.
+* When you find a string between angle brackets (e.g. `<something>`), hopefully self-explanatory, you need to replace it with the right value.
 
 ## Next
 

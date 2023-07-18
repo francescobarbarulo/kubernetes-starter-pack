@@ -7,7 +7,7 @@
 2. [Install and configure prerequisites](https://kubernetes.io/docs/setup/production-environment/container-runtimes/#install-and-configure-prerequisites)
 
   ```sh
-  curl https://github.com/francescobarbarulo/kubernetes-starter-pack/blob/main/scripts/network-prerequisites.sh | sh
+  curl https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/network-prerequisites.sh | sh
   ```
 
 3. Export variables for tool versions

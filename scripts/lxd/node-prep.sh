@@ -1,9 +1,5 @@
 #!/bin/sh
 
-RUNC_VERSION="1.1.4"
-CONTAINERD_VERSION="1.6.16"
-CRICTL_VERSION="1.26.0"
-
 echo "arch:        $ARCH"
 echo "runc:        $RUNC_VERSION"
 echo "containerd:  $CONTAINERD_VERSION"

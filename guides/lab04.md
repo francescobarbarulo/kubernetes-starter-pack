@@ -10,8 +10,11 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
 1. Set some environment variables in order to download the right version and configure correctly all the components.
 
     ```sh
-    export K8S_VERSION=1.25.6
     export ARCH=amd64
+    export RUNC_VERSION=1.1.4
+    export CONTAINERD_VERSION=1.6.16
+    export CRICTL_VERSION=1.26.0
+    export K8S_VERSION=1.25.6
     export REGISTRY=172.30.10.11
     ```
 

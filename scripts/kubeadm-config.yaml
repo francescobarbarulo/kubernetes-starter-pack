@@ -1,0 +1,21 @@
+kind: InitConfiguration
+apiVersion: kubeadm.k8s.io/v1beta3
+nodeRegistration:
+  criSocket: "unix:///run/containerd/containerd.sock"
+---
+kind: ClusterConfiguration
+apiVersion: kubeadm.k8s.io/v1beta3
+kubernetesVersion: v$K8S_VERSION
+clusterName: "kubernetes"
+# Enable control plane load balancing
+# controlPlaneEndpoint: "<lb-ip>:6443"
+networking:
+  dnsDomain: "cluster.local"
+  serviceSubnet: "10.96.0.0/12"
+  podSubnet: "172.16.0.0/16"
+---
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+cgroupDriver: "systemd"
+rotateCertificates: "true"
+serverTLSBootstrap: "true"

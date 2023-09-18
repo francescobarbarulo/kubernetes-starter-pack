@@ -33,6 +33,8 @@ In this lab you are going to install the Cilium CNI plugin, add a worker node to
     kubectl get nodes
     ```
 
+    > If the node is still in the `NotReady` status, wait a few more seconds and retry.
+
 4. Let's take a look at the running Pods too by running. CoreDNS and Cilium pods are now running.
 
     ```sh
@@ -60,8 +62,11 @@ Like the control-plane node, the new worker node must be prepared installing and
 2. Set some environment variables.
 
     ```sh
-    export K8S_VERSION=1.25.6
     export ARCH=amd64
+    export RUNC_VERSION=1.1.4
+    export CONTAINERD_VERSION=1.6.16
+    export CRICTL_VERSION=1.26.0
+    export K8S_VERSION=1.25.6
     export REGISTRY=172.30.10.11
     ```
 

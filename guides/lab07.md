@@ -388,7 +388,7 @@ The installed CSI driver and the created `StorageClass` enable you to expand PVC
     kubectl delete persistentvolumeclaim csi-pvc
     ```
 
-2. Verify the Persistent Volume is automatically deleted due to the `csi-hostpath-sc` Storage Class reclaim policy set to `Delete`.
+2. Verify the Persistent Volume is automatically deleted due to the `nfs-csi` Storage Class reclaim policy set to `Delete`.
 
     ```sh
     kubectl get persistentvolumes

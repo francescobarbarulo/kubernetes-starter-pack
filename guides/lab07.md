@@ -200,7 +200,7 @@ A cluster administrator can define as many `StorageClass` objects as needed, eac
 
     ```plaintext
     NAME      PROVISIONER      RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-    nfs-csi   nfs.csi.k8s.io   Delete          Immediate           true                   7s
+    nfs-csi   nfs.csi.k8s.io   Delete          Immediate           false                  7s
     ```
 
 4. An administrator can mark a specific `StorageClass` as default by adding the `storageclass.kubernetes.io/is-default-class` annotation to it. When a default `StorageClass` exists in a cluster and a user creates a `PersistentVolumeClaim` with `storageClassName` unspecified, the `DefaultStorageClass` admission controller automatically adds the `storageClassName` field pointing to the default storage class.

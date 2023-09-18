@@ -10,4 +10,4 @@ do
   lxc delete $instance
 done
 
-rm -r ~/.kube
+if [ -d ~/.kube ]; then rm -r ~/.kube; fi

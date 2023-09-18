@@ -9,3 +9,5 @@ do
   lxc stop $instance
   lxc delete $instance
 done
+
+rm -r ~/.kube

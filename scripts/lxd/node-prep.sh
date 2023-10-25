@@ -53,5 +53,5 @@ rm -f kubelet
 RELEASE_VERSION="$(curl -s https://api.github.com/repos/kubernetes/release/releases/latest | grep tag_name | sed -E 's/.*"([^"]+)".*/\1/')"
 curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" | sed "s:/usr/bin:/usr/local/bin:g" | tee /usr/local/lib/systemd/system/kubelet.service > /dev/null
 mkdir -p /usr/local/lib/systemd/system/kubelet.service.d
-curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" | sed "s:/usr/bin:/usr/local/bin:g" | tee /usr/local/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+curl -sSL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/10-kubeadm.conf | sed "s:/usr/bin:/usr/local/bin:g" | tee /usr/local/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
 systemctl enable --now kubelet

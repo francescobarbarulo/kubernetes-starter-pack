@@ -49,7 +49,7 @@ In this lab you are going to install the Cilium CNI plugin, add a worker node to
 
 🖥️ Open a shell in `k8s-cp-01` environment.
 
-1. Create a new token and print the join command. Save it somewhere because it will need in the next steps.
+1. Create a new token and print the join command. Save it somewhere because it will need at step 4.
 
     ```sh
     kubeadm token create --print-join-command
@@ -75,7 +75,7 @@ Like the control-plane node, the new worker node must be prepared installing and
     curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lxd/node-prep.sh | sh
     ```
 
-4. Join the worker node to the exsisting cluster by running the `kubeadm join` command printed at step 1.
+4. Run the command printed at step 1 in order to join the worker node to the existing cluster.
 
 🖥️ Open a shell in the `student` machine.
 

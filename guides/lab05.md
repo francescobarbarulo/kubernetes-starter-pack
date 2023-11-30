@@ -1,6 +1,6 @@
 # Lab 05
 
-In this lab you are going to install the Cilium CNI plugin, add a worker node to the cluster, and create, scale und update a Deployment.
+In this lab you are going to install the Cilium CNI plugin, add a worker node to the cluster. Create, scale and update a Deployment.
 
 ## Install a CNI plugin
 
@@ -49,7 +49,7 @@ In this lab you are going to install the Cilium CNI plugin, add a worker node to
 
 🖥️ Open a shell in `k8s-cp-01` environment.
 
-1. Create a new token and print the join command. Save it somewhere because it will need at step 4.
+1. Create a new token and print the join command. Save it somewhere because it will be needed in step 4.
 
     ```sh
     kubeadm token create --print-join-command
@@ -178,7 +178,7 @@ In order to facilitate more load, you may need to scale up the number of replica
     kubectl get deployments
     ```
 
-    You should see `4/4` in the `READY` column. If not, run again the command above.
+    You should see `4/4` in the `READY` column. If not, run the command above again.
 
 3. The change was applied, and you have 4 instances of the application available. Next, let’s check if the number of Pods changed:
 
@@ -255,7 +255,7 @@ In order to facilitate more load, you may need to scale up the number of replica
     ```
     Press `Ctrl-C` to stop the above rollout status watch.
 
-3. Looking at the Pods created, you see that 2 Pods created by new ReplicaSet is stuck in an image pull loop.
+3. Looking at the Pods created, you can see that the 2 Pods created by new ReplicaSet are stuck in an image pull loop.
 
     ```sh
     kubectl get pods

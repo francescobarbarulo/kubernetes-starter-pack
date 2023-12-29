@@ -1,6 +1,6 @@
 # Lab 07
 
-In this lab you are going to perisist data in Kubernetes using PersistenVolumes (PVs), PersistentVolumeClaims (PVCs) and StorageClasses (SCs).
+In this lab you are going to perisist data in Kubernetes using PersistentVolumes (PVs), PersistentVolumeClaims (PVCs) and StorageClasses (SCs).
 
 As you did with the CNI plugin, you need to let Kubernetes be able to interact with a storage via a CSI driver. In this lab you are going to use the NFS CSI driver which provides persistent storage backed by a NFS server.
 
@@ -144,7 +144,7 @@ Open a shell in the `student` machine.
     hostpath.csi.k8s.io   true             true             false             <unset>         false               Persistent,Ephemeral   45m
     ``` -->
 
-## Enable dynamic volume provisionig
+## Enable dynamic volume provisioning
 
 A cluster administrator can define as many `StorageClass` objects as needed, each specifying a _volume plugin_ (aka `provisioner`) that provisions a volume and the set of parameters to pass to that provisioner when provisioning. A cluster administrator can define and expose multiple flavors of storage (from the same or different storage systems) within a cluster, each with a custom set of parameters. This design also ensures that end users don't have to worry about the complexity and nuances of how storage is provisioned, but still have the ability to select from multiple storage options.
 
@@ -218,7 +218,7 @@ Mark the `nfs-csi` StorageClass as _default_.
 
 ## Using dynamic provisioning
 
-Users request dynamically provisioned storage by including a storage class in their `PersistentVolumeClaim`.
+Users request provisioned storage dynamically by including a storage class in their `PersistentVolumeClaim`.
 
 🖥️ Open a shell in the `student` machine.
 

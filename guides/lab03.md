@@ -41,7 +41,7 @@ Docker provides a containerized local registry that can be started using the `do
 
 ## Push the image to the registry
 
-Once you built the app container image, you are ready to push it to your container registry.
+Once you've built the app container image, you are ready to push it to your container registry.
 
 🖥️ Open a shell in the `dev` environment.
 
@@ -87,7 +87,7 @@ Once you built the app container image, you are ready to push it to your contain
     docker tag getting-started:v2 $REGISTRY:5000/getting-started:v2
     ```
 
-6. Before pushing the renamed image, login to the local registry using `testpassword` as password when prompted.
+6. Before pushing the renamed image, login to the local registry using `testpassword` as the password when prompted.
 
     ```sh
     docker login $REGISTRY:5000 -u testuser

@@ -1,6 +1,6 @@
 # Lab 06
 
-In this lab you are going to use Services to expose Pods to the cluster. The you are going yo install an Ingress Controller to forward traffic to the right service based on the HTTP URI.
+In this lab you are going to use Services to expose Pods to the cluster. Then you are going to install an Ingress Controller to forward traffic to the right service based on the HTTP URI.
 
 ## Creating a Service
 
@@ -45,7 +45,7 @@ These are problems a Service solves.
     kubectl get services
     ```
 
-    Service is backed by a group of Pods that are exposed through EndpointSlices. The Service's selector will be evaluated continuously and the results will be POSTed to an EndpointSlice that is connected to the Service using a labels. When a Pod dies, it is automatically removed from the EndpointSlices that contain it as an endpoint. New Pods that match the Service's selector will automatically get added to an EndpointSlice for that Service. 
+    Service is backed by a group of Pods that are exposed through EndpointSlices. The Service's selector will be evaluated continuously and the results will be POSTed to an EndpointSlice that is connected to the Service using a labels. When a Pod dies, it is automatically removed from the EndpointSlices that contains it as an endpoint. New Pods that match the Service's selector will automatically get added to an EndpointSlice for that Service. 
   
 3. Check the endpoints, and note that the IPs are the same as the Pods created at the end of Lab 04.
 
@@ -94,7 +94,7 @@ Kubernetes offers a DNS cluster addon Service that automatically assigns dns nam
 
     **Note**: The resolved IP address is the same as the one printed by `kubectl get services`.
 
-3. Test the random load balancer mechanism implemented by the Service. Run multiple times the command below and verify you get replies from different Pods.
+3. Test the random load balancer mechanism implemented by the Service. Run the command below multiple times and verify you get replies from different Pods.
 
     ```sh
     curl hello-app
@@ -188,7 +188,7 @@ The downside of externally exposed services, like `NodePort` or `LoadBalancer`, 
 
 Kubernetes introduced an ingress framework to allow a single externally facing gateway to route HTTP/HTTPS traffic to multiple backend services. 
 
-Traffic routing is controlled by set of rules defined by Ingress resources that are fulfilled by an Ingress Controller.
+Traffic routing is controlled by sets of rules defined by Ingress resources that are fulfilled by an Ingress Controller.
 Unlike other types of controllers which run as part of the kube-controller-manager binary, Ingress controllers are not started automatically with a cluster.
 
 There are several open-source Ingress Controller implementations. You are going to deploy the [NGINX ingress controller](https://kubernetes.github.io/ingress-nginx/).

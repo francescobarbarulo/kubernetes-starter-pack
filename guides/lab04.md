@@ -7,7 +7,7 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
 
 🖥️ Open a shell in the `k8s-cp-01` environment.
 
-1. Set some environment variables in order to download the right version and configure correctly all the components.
+1. Set some environment variables in order to download the right version and configure all the components correctly .
 
     ```sh
     export ARCH=amd64
@@ -118,7 +118,7 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
     This is due to the lack of a kubeconfig file. The `kubectl` command-line tool uses kubeconfig files to find the information it needs to choose a cluster and communicate with the API server of a cluster.
     By default, `kubectl` looks for the `~/.kube/config` file. You can specify other kubeconfig files by setting the `KUBECONFIG` environment variable. 
     
-5. During cluster creation, kubeadm signs the certificate in the `/etc/kubernetes/admin.conf` to have `Subject: O = system:masters, CN = kubernetes-admin`. Copy it in `~/.kube/config` from `k8s-cp-01` environment:
+5. During cluster creation, kubeadm signs the certificate in the `/etc/kubernetes/admin.conf` to have `Subject: O = system:masters, CN = kubernetes-admin`. Copy it into `~/.kube/config` from `k8s-cp-01` environment:
 
     ```sh
     mkdir ~/.kube && lxc file pull k8s-cp-01/etc/kubernetes/admin.conf ~/.kube/config
@@ -210,7 +210,7 @@ Assume you need to assign admin privileges to your developer `jane` in the `defa
     ```sh
     export USERNAME=jane
     ```
-2. Generate `jane` keys.
+2. Generate `jane`'s keys.
 
     ```sh
     openssl genrsa -out $USERNAME.key 2048

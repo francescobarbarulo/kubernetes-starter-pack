@@ -1,3 +1,7 @@
+storage_pools:
+  - name: default
+    driver: dir
+
 networks:
   - name: incusbr0
     type: bridge

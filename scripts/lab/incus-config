@@ -1,3 +1,5 @@
 networks:
-  - config:
+  - name: incusbr0
+    type: bridge
+    config:
       ipv4.address: 172.30.10.1/24

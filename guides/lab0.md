@@ -18,19 +18,19 @@ On top of it you will find six different isolated environments provided by means
 
 * List the environments.
   ```sh
-  lxc list
+  incus list
   ```
   > Refer to `eth0` interface for the IP address.
 
 * Open a shell session inside an environment.
   ```sh
-  lxc exec <env> bash
+  incus exec <env> bash
   ```
   > It acts as `ssh`
 
 * Pull a file from an environment to the `student` machine.
   ```sh
-  lxc file pull <env>/<path> <student host path>
+  incus file pull <env>/<path> <student host path>
   ```
   > It acts as `scp`
 

@@ -4,6 +4,7 @@ config:
     #cloud-config
     package_upgrade: true
     packages:
+    - gettext-base
     - curl
     - apparmor
     - apparmor-utils
@@ -27,6 +28,10 @@ config:
   security.privileged: "true"
 description: K8s profile
 devices:
+  boot:
+    source: /boot
+    path: /boot
+    type: disk
   eth0:
     name: eth0
     network: lxdbr0

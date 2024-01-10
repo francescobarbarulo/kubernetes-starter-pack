@@ -16,7 +16,7 @@ curl -sL https://raw.githubusercontent.com/containerd/containerd/main/containerd
 
 if [ ! -d /etc/containerd ]; then mkdir /etc/containerd; fi
 # Set REGISTRY env variable
-curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/containerd/config.toml | envsubst | tee /etc/containerd/config.toml > /dev/null
+curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/containerd/config.toml | envsubst | tee /etc/containerd/config.toml > /dev/null
 
 systemctl daemon-reload
 systemctl enable --now containerd
@@ -50,8 +50,8 @@ echo "Installing kubelet"
 curl -sLO https://dl.k8s.io/release/v${K8S_VERSION}/bin/linux/${ARCH}/kubelet
 install kubelet /usr/local/bin/kubelet
 rm -f kubelet
-RELEASE_VERSION="$(curl -s https://api.github.com/repos/kubernetes/release/releases/latest | grep tag_name | sed -E 's/.*"([^"]+)".*/\1/')"
-curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" | sed "s:/usr/bin:/usr/local/bin:g" | tee /usr/local/lib/systemd/system/kubelet.service > /dev/null
+RELEASE_VERSION="v0.16.2"
+curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/krel/templates/latest/kubelet/kubelet.service" | sed "s:/usr/bin:/usr/local/bin:g" | tee /usr/local/lib/systemd/system/kubelet.service > /dev/null
 mkdir -p /usr/local/lib/systemd/system/kubelet.service.d
-curl -sSL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/10-kubeadm.conf | sed "s:/usr/bin:/usr/local/bin:g" | tee /usr/local/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/krel/templates/latest/kubeadm/10-kubeadm.conf" | sed "s:/usr/bin:/usr/local/bin:g" | tee /usr/local/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
 systemctl enable --now kubelet

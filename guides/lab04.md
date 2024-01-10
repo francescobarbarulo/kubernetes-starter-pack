@@ -20,7 +20,7 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
 
 2. Prepare the host by installing and configuring prerequisites (e.g. enabling IPv4 forwarding and letting iptables see bridged traffic), a container runtime (`containerd` and `runc`), `kubeadm` and `kubelet`.
     ```sh
-    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lxd/node-prep.sh | sh
+    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/node-prep.sh | sh
     ```
 
 3. Create the configuration file for kubeadm.
@@ -121,7 +121,7 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
 5. During cluster creation, kubeadm signs the certificate in the `/etc/kubernetes/admin.conf` to have `Subject: O = system:masters, CN = kubernetes-admin`. Copy it into `~/.kube/config` from `k8s-cp-01` environment:
 
     ```sh
-    mkdir ~/.kube && lxc file pull k8s-cp-01/etc/kubernetes/admin.conf ~/.kube/config
+    mkdir ~/.kube && incus file pull k8s-cp-01/etc/kubernetes/admin.conf ~/.kube/config
     ```
 
 6. Try to run `kubectl get node` again. The output is simlar to this:
@@ -202,7 +202,7 @@ Assume you need to assign admin privileges to your developer `jane` in the `defa
 1. Copy the key and the certificate from the control-plane node to the `student` machine.
 
     ```sh
-    lxc file pull k8s-cp-01/etc/kubernetes/pki/ca.{key,crt} .
+    incus file pull k8s-cp-01/etc/kubernetes/pki/ca.{key,crt} .
     ```
 
 2. Set the `USERNAME` environment variable to use in the next steps.

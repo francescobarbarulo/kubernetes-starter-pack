@@ -72,7 +72,7 @@ Like the control-plane node, the new worker node must be prepared installing and
 
 3. Install required tools.
     ```sh
-    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lxd/node-prep.sh | sh
+    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/node-prep.sh | sh
     ```
 
 4. Run the command printed at step 1 in order to join the worker node to the existing cluster.

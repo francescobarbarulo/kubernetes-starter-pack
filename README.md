@@ -10,42 +10,35 @@ You can replicate the lab on your own by using an Ubuntu 22.04 machine.
 
 ### Prerequisites
 
-1. Install lxd.
+1. Install [Incus](https://linuxcontainers.org/incus/docs/main/).
 
     ```sh
-    snap install lxd
+    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/incus-install.sh | sh
     ```
 
 2. Clone this repository.
 
     ```sh
-    git clone https://github.com/francescobarbarulo/kubernetes-starter-pack.git
+    git clone https://github.com/francescobarbarulo/kubernetes-starter-pack.git && cd kubernetes-starter-pack
+    ```
+3. Give execution permissions to the scripts.
+
+    ```sh
+    chmod +x scripts/lab/bootstrap.sh scripts/lab/destroy.sh
     ```
 
 ### Bootstrap lab
 
-1. Change directory to `scripts/lxd`.
+Run the bootstrap script.
 
-    ```sh
-    cd kubernetes-starter-pack/scripts/lxd
-    ```
-
-2. Give execution permissions to the scripts.
-
-    ```sh
-    chmod u+x bootstrap.sh destroy.sh
-    ```
-
-3. Run the bootstrap script.
-
-    ```sh
-    ./bootstrap.sh
-    ```
+  ```sh
+  ./scripts/lab/bootstrap.sh
+  ```
 
 ### Destroy lab
 
-1. Run the destroy script.
+Run the destroy script.
 
-    ```sh
-    ./destroy
-    ```
+  ```sh
+  ./scripts/lab/destroy.sh
+  ```

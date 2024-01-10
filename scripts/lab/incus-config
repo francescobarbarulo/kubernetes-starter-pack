@@ -7,3 +7,4 @@ networks:
     type: bridge
     config:
       ipv4.address: 172.30.10.1/24
+      ipv4.nat: "true"

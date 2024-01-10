@@ -6,7 +6,7 @@ Start from [here](./guides/lab0.md)!
 
 ## Replicating the lab environment
 
-You can replicate the lab on your own by using an Ubuntu 22.04 machine.
+You can replicate the lab on your own by using an Ubuntu 22.04 or Debian 12 machine.
 
 ### Prerequisites
 

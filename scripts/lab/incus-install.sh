@@ -15,4 +15,4 @@ Signed-By: /etc/apt/keyrings/zabbly.asc
 EOF'
 
 apt-get update
-apt-get install incus
+apt-get install incus -y

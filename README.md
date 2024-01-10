@@ -13,7 +13,7 @@ You can replicate the lab on your own by using an Ubuntu 22.04 machine.
 1. Install [Incus](https://linuxcontainers.org/incus/docs/main/).
 
     ```sh
-    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/incus-install.sh | sh
+    curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/incus-install.sh | sudo sh
     ```
 
 2. Clone this repository.

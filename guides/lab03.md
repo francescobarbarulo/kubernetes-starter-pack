@@ -30,6 +30,7 @@ Docker provides a containerized local registry that can be started using the `do
     -e "REGISTRY_AUTH=htpasswd" \
     -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
     -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \
+    --restart always \
     registry:2
     ```
 

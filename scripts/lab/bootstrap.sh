@@ -21,11 +21,3 @@ do
   incus init images:ubuntu/jammy/cloud $name -d eth0,ipv4.address=$ipv4_addr --profile k8s
   incus start $name
 done
-
-for instance in $INSTANCES
-
-do
-  name=$(echo $instance | cut -d ":" -f 1)
-  incus config device add $name modules disk source=/lib/modules path=/lib/modules
-done
-

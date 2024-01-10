@@ -1,7 +1,6 @@
 # Lab 0
 
-The lab is composed by a dedicated Ubuntu 22.04 virtual machine, from now on called `student` machine (`student@lab`).
-On top of it you will find six different isolated environments provided by means of Linux Containers (LXC). Nevertheless you can think of them as physical or virtual machines:
+The lab is composed by a dedicated VM, from now on called `student` machine (`student@lab`), on top of which you can find six different isolated environments provided by means of Linux Containers (LXC). Nevertheless you can think of them as physical or virtual machines:
 
 | Environment | Shell | Description | IP address | 
 |---|---|---|---|

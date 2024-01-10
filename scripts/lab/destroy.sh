@@ -7,6 +7,7 @@ for instance in $INSTANCES
 
 do
   incus stop $instance
+  echo "Removing $instance"
   incus delete $instance
 done
 

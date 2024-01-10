@@ -34,7 +34,7 @@ devices:
     type: disk
   eth0:
     name: eth0
-    network: lxdbr0
+    network: incusbr0
     type: nic
   kmsg:
     path: /dev/kmsg

@@ -16,23 +16,20 @@ You can replicate the lab on your own by using an Ubuntu 22.04 or Debian 12 mach
     curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/incus-install.sh | sudo sh
     ```
 
-2. Clone this repository.
+2. Add your user to the `incus-admin` group in order to control incus without root privileges.
 
     ```sh
-    git clone https://github.com/francescobarbarulo/kubernetes-starter-pack.git && cd kubernetes-starter-pack
+    sudo adduser $USER incus-admin
     ```
-3. Give execution permissions to the scripts.
 
-    ```sh
-    chmod +x scripts/lab/bootstrap.sh scripts/lab/destroy.sh
-    ```
+3. Logout and login again to restart the session.
 
 ### Bootstrap lab
 
 Run the bootstrap script.
 
   ```sh
-  ./scripts/lab/bootstrap.sh
+  curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/bootstrap.sh | sudo sh
   ```
 
 ### Destroy lab
@@ -40,5 +37,5 @@ Run the bootstrap script.
 Run the destroy script.
 
   ```sh
-  ./scripts/lab/destroy.sh
+  curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/destroy.sh | sudo sh
   ```

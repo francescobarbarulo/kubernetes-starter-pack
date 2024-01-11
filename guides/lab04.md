@@ -11,10 +11,10 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
 
     ```sh
     export ARCH=amd64
-    export RUNC_VERSION=1.1.4
-    export CONTAINERD_VERSION=1.6.16
-    export CRICTL_VERSION=1.26.0
-    export K8S_VERSION=1.25.6
+    export RUNC_VERSION=1.1.11
+    export CONTAINERD_VERSION=1.7.11
+    export CRICTL_VERSION=1.29.0
+    export K8S_VERSION=1.29.0
     export REGISTRY=172.30.10.11
     ```
 
@@ -84,7 +84,7 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
 1. Set some environment variables in order to download the correct version of `kubectl`.
 
     ```sh
-    export K8S_VERSION=1.25.6
+    export K8S_VERSION=1.29.0
     export ARCH=amd64
     ``` 
 

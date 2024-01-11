@@ -63,10 +63,10 @@ Like the control-plane node, the new worker node must be prepared installing and
 
     ```sh
     export ARCH=amd64
-    export RUNC_VERSION=1.1.4
-    export CONTAINERD_VERSION=1.6.16
-    export CRICTL_VERSION=1.26.0
-    export K8S_VERSION=1.25.6
+    export RUNC_VERSION=1.1.11
+    export CONTAINERD_VERSION=1.7.11
+    export CRICTL_VERSION=1.29.0
+    export K8S_VERSION=1.29.0
     export REGISTRY=172.30.10.11
     ```
 

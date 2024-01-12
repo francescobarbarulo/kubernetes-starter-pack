@@ -1,0 +1,26 @@
+config:
+  cloud-init.user-data: |
+    #cloud-config
+    package_upgrade: true
+    packages:
+    - gettext-base
+    - curl
+    - apparmor
+    - apparmor-utils
+    - socat
+    - conntrack
+    - net-tools
+    - iptables
+    - ebtables
+    - ethtool
+description: Base profile
+devices:
+  eth0:
+    name: eth0
+    network: incusbr0
+    type: nic
+  root:
+    path: /
+    pool: default
+    type: disk
+name: base

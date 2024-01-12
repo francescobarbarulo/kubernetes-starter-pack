@@ -99,6 +99,7 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
 3. Enable kubectl shell autompletion in the current session.
 
     ```sh
+    [ ! -d "/etc/bash_completion.d" ] && sudo mkdir /etc/bash_completion.d
     kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
     source ~/.bashrc
     ```

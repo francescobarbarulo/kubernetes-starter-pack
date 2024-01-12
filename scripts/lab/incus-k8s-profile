@@ -1,19 +1,5 @@
 config:
   boot.autostart: "true"
-  cloud-init.user-data: |
-    #cloud-config
-    package_upgrade: true
-    packages:
-    - gettext-base
-    - curl
-    - apparmor
-    - apparmor-utils
-    - socat
-    - conntrack
-    - net-tools
-    - iptables
-    - ebtables
-    - ethtool
   limits.cpu: "2"
   limits.memory: 2GB
   limits.memory.swap: "false"

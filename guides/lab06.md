@@ -83,7 +83,7 @@ Kubernetes offers a DNS cluster addon Service that automatically assigns dns nam
 1. Let's run another curl application to test this:
 
     ```sh
-    kubectl run curl --image=radial/busyboxplus:curl -i --tty --rm
+    kubectl run curl --image=fbarbarulo/nettools -i --tty --rm
     ```
 
 2. Let's resolve the `hello-app` Service name.

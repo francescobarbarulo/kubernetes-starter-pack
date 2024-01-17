@@ -198,7 +198,7 @@ There are several open-source Ingress Controller implementations. You are going 
 1. Deploy the ingress controller.
 
     ```sh
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.6.4/deploy/static/provider/cloud/deploy.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.5/deploy/static/provider/cloud/deploy.yaml
     ```
 
     As the output shows, the manifest applied above creates a new namespace called `ingress-nginx`, plus a bunch of resources needed by the controller to function properly, including the service named `ingress-nginx-controller` and the IngressClass `nginx` (`kubectl get ingressclasses`).

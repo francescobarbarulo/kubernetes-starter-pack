@@ -20,6 +20,8 @@ incus start default
 
 # Wait for init
 incus exec default -- cloud-init status --wait
+# Disable cloud-init
+incus exec default -- touch /etc/cloud/cloud-init.disabled
 incus stop default
 
 # Create base image

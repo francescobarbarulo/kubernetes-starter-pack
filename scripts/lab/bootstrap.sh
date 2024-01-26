@@ -3,8 +3,9 @@
 REPO=https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/
 PREFIX=scripts/lab
 
-# Set nf_conntrack_max parameter
+# Set nf_conntrack_max kernel parameter
 modprobe ip_conntrack
+echo nf_conntrack >> /etc/modules
 echo net.netfilter.nf_conntrack_max=$(($(nproc)*65536)) > /etc/sysctl.d/99-ksp.conf
 sysctl -p /etc/sysctl.d/99-ksp.conf > /dev/null
 

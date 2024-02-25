@@ -1,5 +1,6 @@
 config:
   boot.autostart: "true"
+  boot.autostart.delay: 100
   limits.cpu: "2"
   limits.memory: 2GB
   limits.memory.swap: "false"

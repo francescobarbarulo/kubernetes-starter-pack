@@ -51,7 +51,7 @@ Once you've built the app container image, you are ready to push it to your cont
     docker push getting-started:v2
     ```
 
-    You probably saw an error like this:
+    You probably see an error like this:
 
     ```plaintext
     The push refers to repository [docker.io/library/getting-started]
@@ -63,7 +63,7 @@ Once you've built the app container image, you are ready to push it to your cont
 2. Take note of the `registry` IP address.
 
     ```sh
-    export REGISTRY=172.30.10.11
+    export REGISTRY=172.30.10.11:5000
     ```
 
 3. Configure Docker to contact the `registry` using HTTP.
@@ -71,7 +71,7 @@ Once you've built the app container image, you are ready to push it to your cont
     ```sh
     cat <<EOF | tee /etc/docker/daemon.json > /dev/null
     {
-        "insecure-registries" : ["http://$REGISTRY:5000"]
+        "insecure-registries" : ["http://$REGISTRY"]
     }
     EOF
     ```
@@ -85,19 +85,19 @@ Once you've built the app container image, you are ready to push it to your cont
 5. Use the `docker tag` command to give the `getting-started` image a new name, including the registry hostname. If you don't specify a tag, Docker will use a tag called `latest`.
 
     ```sh
-    docker tag getting-started:v2 $REGISTRY:5000/getting-started:v2
+    docker tag getting-started:v2 $REGISTRY/getting-started:v2
     ```
 
 6. Before pushing the renamed image, login to the local registry using `testpassword` as the password when prompted.
 
     ```sh
-    docker login $REGISTRY:5000 -u testuser
+    docker login $REGISTRY -u testuser
     ```
 
 7. Now try to push again.
 
     ```sh
-    docker push $REGISTRY:5000/getting-started:v2
+    docker push $REGISTRY/getting-started:v2
     ```
 
 8. Check the image is present on the registry by refreshing the web browser at [`http://172.30.10.11:5000/v2/_catalog`](http://172.30.10.11:5000/v2/_catalog). You should see a json response like this:

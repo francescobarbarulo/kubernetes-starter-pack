@@ -147,14 +147,14 @@ version = 2
       [plugins."io.containerd.grpc.v1.cri".registry.auths]
 
       [plugins."io.containerd.grpc.v1.cri".registry.configs]
-        [plugins."io.containerd.grpc.v1.cri".registry.configs."${REGISTRY}:5000".tls]
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."${REGISTRY}".tls]
           insecure_skip_verify = true
 
       [plugins."io.containerd.grpc.v1.cri".registry.headers]
 
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."${REGISTRY}:5000"]
-          endpoint = ["http://${REGISTRY}:5000"]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."${REGISTRY}"]
+          endpoint = ["http://${REGISTRY}"]
 
     [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
       tls_cert_file = ""

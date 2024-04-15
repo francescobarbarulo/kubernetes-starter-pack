@@ -15,7 +15,7 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
     export CONTAINERD_VERSION=1.7.11
     export CRICTL_VERSION=1.29.0
     export K8S_VERSION=1.29.0
-    export REGISTRY=172.30.10.11
+    export REGISTRY=172.30.10.11:5000
     ```
 
 2. Prepare the host by installing and configuring prerequisites (e.g. enabling IPv4 forwarding and letting iptables see bridged traffic), a container runtime (`containerd` and `runc`), `kubeadm` and `kubelet`.

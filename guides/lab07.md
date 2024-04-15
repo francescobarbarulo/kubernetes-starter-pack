@@ -1,6 +1,6 @@
 # Lab 07
 
-In this lab you are going to perisist data in Kubernetes using PersistentVolumes (PVs), PersistentVolumeClaims (PVCs) and StorageClasses (SCs).
+In this lab you are going to persist data in Kubernetes using PersistentVolumes (PVs), PersistentVolumeClaims (PVCs) and StorageClasses (SCs).
 
 As you did with the CNI plugin, you need to let Kubernetes be able to interact with a storage via a CSI driver. In this lab you are going to use the NFS CSI driver which provides persistent storage backed by a NFS server.
 

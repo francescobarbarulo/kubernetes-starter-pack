@@ -67,7 +67,7 @@ Like the control-plane node, the new worker node must be prepared installing and
     export CONTAINERD_VERSION=1.7.11
     export CRICTL_VERSION=1.29.0
     export K8S_VERSION=1.29.0
-    export REGISTRY=172.30.10.11
+    export REGISTRY=172.30.10.11:5000
     ```
 
 3. Install required tools.

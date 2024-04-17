@@ -106,8 +106,12 @@ Now you are ready to run your first container using the Docker CLI.
     docker run --name apache -d httpd:2.4
     ```
 
-    The output represents the containerd ID.
-
+    The output represents the container ID and it should be something like this:
+    
+    ```plaintext
+    ee13332c801e4f4ecaa8ecdf585faa95b5bae398fccb34d63e7ad9a077ae5a06
+    ```
+    
 ## Build you own container image
 
 Assume you have a project codebase hosted on some version control hosting platform like GitHub.

@@ -231,7 +231,7 @@ There are several open-source Ingress Controller implementations. You are going 
     ingress-nginx-controller   LoadBalancer   10.96.186.119   <pending>     80:30958/TCP,443:31600/TCP   1m2s
     ```
 
-    By default, this Service is of type `LoadBalancer` and the assignment of an external IP is in the `pending` status. Howerver a Service of type `LoadBalancer` includes all the funcitonalities of the `NodePort` one. In fact, the service is already exposed on port `30958` and `31600` of the host.
+    By default, this Service is of type `LoadBalancer` and the assignment of an external IP is in the `pending` status. Howerver a Service of type `LoadBalancer` includes all the functionalities of the `NodePort` one. In fact, the service is already exposed on port `30958` and `31600` of the host.
 
 4. Update the Service `type` field to `NodePort`.
 

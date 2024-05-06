@@ -14,7 +14,7 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
     export RUNC_VERSION=1.1.11
     export CONTAINERD_VERSION=1.7.11
     export CRICTL_VERSION=1.29.0
-    export K8S_VERSION=1.29.0
+    export K8S_VERSION=1.29.4
     export REGISTRY=172.30.10.11:5000
     ```
 
@@ -84,7 +84,7 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
 1. Set some environment variables in order to download the correct version of `kubectl`.
 
     ```sh
-    export K8S_VERSION=1.29.0
+    export K8S_VERSION=1.29.4
     export ARCH=amd64
     ``` 
 
@@ -129,7 +129,7 @@ In this lab you are going to create a Kubernetes cluster with `kubeadm`, startin
 
     ```plaintext
     NAME        STATUS     ROLES           AGE   VERSION
-    k8s-cp-01   NotReady   control-plane   1m   v1.25.6
+    k8s-cp-01   NotReady   control-plane   1m    v1.29.4
     ```
 
     As you see, the node is in the `NotReady` status. From the end of the `kubeadm init` output, in the `k8s-cp-01` environment, you may have seen the statement:

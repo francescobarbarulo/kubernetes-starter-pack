@@ -179,7 +179,13 @@ At the moment, you are able to access the API server because you are using the `
    kubectl get clusterrolebinding kubeadm:cluster-admins -o yaml
    ```
 
-> Sharing the `admin.conf` with additional users is **not recommended**! Instead, you can use tools like `openssl` or [`kubeadm kubeconfig user`](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/#kubeconfig-additional-users) command to generate certificates and kubeconfig files for additional users.
+**Please note**: Sharing the `admin.conf` with additional users is **not recommended**! Instead, you can get an user be able to authenticate and invoke APIs in different ways:
+
+- raw way (not recommanded): `openssl` to generate keys, CSRs and certificates;
+
+- combined way: `openssl` to generate keys and the [`CertificateSigningRequest` Kubernetes API](https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/#normal-user) to generate certificates;
+
+- straightforward way (recommended): [`kubeadm kubeconfig user`](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/#kubeconfig-additional-users) command to generate directly kubeconfig files.
 
 ## Grant access to new users
 
@@ -227,11 +233,11 @@ Assume you need to assign admin privileges to your developer `jane` in the `defa
 
    This is because you created a RoleBinding between the `admin` ClusterRole and the user `jane` **only** in the `default` namespace.
 
-## Create certificate and kubeconfig file for a new user
+## Create certificate and kubeconfig file for a new user using `openssl`
 
 🖥️ Open a shell in the `student` machine.
 
-Now that the RoleBinding for `jane` is in place, you need to create a signed certificate for `Subject: O = dev, CN = jane`. To do this you need the root CA certificate of the Kubernetes instance.
+Now that the RoleBinding for `jane` is in place, you need to create a signed certificate for `Subject: O = dev, CN = jane` and a kubeconfig file. To do this you need the root CA certificate of the Kubernetes instance.
 
 1. Copy the key and the certificate from the control-plane node to the `student` machine.
 

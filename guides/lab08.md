@@ -1,24 +1,31 @@
 # Lab 08
 
 In this lab you are going to deploy a Wordpress application with a MySQL database. Both applications use PersistentVolumes and PersistentVolumeClaims to store data.
+All these resources will be created in a new namespace.
 
 ## Deploy the MySQL database
 
 🖥️ Open a shell in the `student` machine.
 
-1. Create a new namespace.
+1. Create the new `wordpress-mysql` namespace.
 
    ```sh
    kubectl create namespace wordpress-mysql
    ```
 
-2. Create a secret to store credentials to access the mysql.
+2. Insted of setting the `--namespace` flag to the new namespace `wordpress-mysql` for every `kubectl` command, edit the current context to make `kubectl` performing requests to this namespace as default.
 
    ```sh
-   kubectl create secret generic mysql-creds --from-literal=user=wordpress --from-literal=password=secret123 --from-literal=db=wordpress --namespace wordpress-mysql
+   kubectl config set-context --current --namespace wordpress-mysql
    ```
 
-3. Create a Service resource for the database instance. Since the database is a stateful application it recommended to use a headless service.
+3. Create a secret to store credentials to access the mysql.
+
+   ```sh
+   kubectl create secret generic mysql-creds --from-literal=user=wordpress --from-literal=password=secret123 --from-literal=db=wordpress
+   ```
+
+4. Create a Service resource for the database instance. Since the database is a stateful application it recommended to use a headless service.
 
    ```sh
    echo '
@@ -40,7 +47,7 @@ In this lab you are going to deploy a Wordpress application with a MySQL databas
    ' | kubectl apply -f -
    ```
 
-4. Create the `mysql` StatefulSet setting the required `MYSQL_ROOT_PASSWORD` environment variable using the secret created ast step 1.
+5. Create the `mysql` StatefulSet setting the required `MYSQL_ROOT_PASSWORD` environment variable using the secret created ast step 1.
 
    ```sh
    echo '

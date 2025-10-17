@@ -16,26 +16,26 @@ The [Kubernetes official documentation](https://kubernetes.io/docs/home/) will b
 
 4. Use `bob` kubeconfig file to create the next Kubernetes resources in the `europe` namespace.
 
-    **Tip**: Edit the kubectl context by setting the namespace instead of using the `-n europe` flag everytime you need to create a resource in the `europe` namespace:
+   **Tip**: Edit the kubectl context by setting the namespace instead of using the `-n europe` flag everytime you need to create a resource in the `europe` namespace:
 
-    ```sh
-    kubectl config set-context --current --namespace europe
-    ```
+   ```sh
+   kubectl config set-context --current --namespace europe
+   ```
 
 5. Create a Deployment named `getting-started` based on the `getting-started:v2` image built in [lab02](./lab02.md) and pushed to the `registry` in [lab03](./lab03.md).
 
-    * **Tip 1**: Verify the registry is up and running
+   - **Tip 1**: Verify the registry is up and running
 
-    * **Tip 2**: In order to pull an image from a private container image registry you need to provide the credentials by means of a Secret.
+   - **Tip 2**: In order to pull an image from a private container image registry you need to provide the credentials by means of a Secret.
 
-        ```sh
-        kubectl create secret docker-registry regcred \
-        --docker-server=$REGISTRY \
-        --docker-username=testuser \
-        --docker-password=testpassword
-        ```
+     ```sh
+     kubectl create secret docker-registry regcred \
+     --docker-server=$REGISTRY \
+     --docker-username=testuser \
+     --docker-password=testpassword
+     ```
 
-        Rember to [use the Secret in the Pod template of the Deployment configuration](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret).
+     Rember to [use the Secret in the Pod template of the Deployment configuration](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret).
 
 6. Expose the previous Deployment with a Service of type `ClusterIP` (the default).
 

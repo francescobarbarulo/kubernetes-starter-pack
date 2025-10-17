@@ -1,12 +1,24 @@
-#!/bin/sh
+#!/bin/bash
 
 REPO=https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/
 PREFIX=scripts/lab
 
 # Set nf_conntrack_max kernel parameter
+
+# kube-proxy default parameters (https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/)
+CONNTRACK_MAX_PER_CORE=32768
+CONNTRACK_MIN=131072
+
 modprobe ip_conntrack
-echo nf_conntrack >> /etc/modules
-echo net.netfilter.nf_conntrack_max=$(($(nproc)*65536)) > /etc/sysctl.d/99-ksp.conf
+cat /etc/modules | grep nf_conntrack > /dev/null || echo nf_conntrack >> /etc/modules
+
+# kubeproxy expects to have set nf_conntrack_max to nproc*CONNTRACK_MAX_PER_CORE if greater then conntrack_min
+CONNTRACK_MAX=$(($(nproc)*$CONNTRACK_MAX_PER_CORE))
+if [[ $CONNTRACK_MAX -lt $CONNTRACK_MIN ]]; then
+  CONNTRACK_MAX=$CONNTRACK_MIN
+fi
+
+echo net.netfilter.nf_conntrack_max=$CONNTRACK_MAX > /etc/sysctl.d/99-ksp.conf
 sysctl -p /etc/sysctl.d/99-ksp.conf > /dev/null
 
 # Init Incus

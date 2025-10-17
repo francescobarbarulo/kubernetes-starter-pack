@@ -32,7 +32,7 @@ You can replicate the lab on your own by using an Ubuntu 22.04 or Debian 12 mach
 Run the bootstrap script.
 
 ```sh
-curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/bootstrap.sh | sudo sh
+curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/bootstrap.sh | sudo bash
 ```
 
 ### Destroy lab
@@ -40,5 +40,5 @@ curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter
 Run the destroy script.
 
 ```sh
-curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/destroy.sh | sudo sh
+curl -sL https://raw.githubusercontent.com/francescobarbarulo/kubernetes-starter-pack/main/scripts/lab/destroy.sh | sudo bash
 ```

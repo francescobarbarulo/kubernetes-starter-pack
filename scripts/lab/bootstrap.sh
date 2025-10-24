@@ -59,7 +59,7 @@ done
 
 # Create haproxy profile
 incus profile list | grep -qo haproxy || incus profile create haproxy 
-incus profile edit haproxy < /home/dario/Desktop/kubernetes-starter-pack/scripts/lab/incus-haproxy-profile
+curl -sL $REPO/$PREFIX/incus-haproxy-profile | incus profile edit haproxy
 
 # Create Load Balancer instance
 incus init local:base lb -d eth0,ipv4.address=172.30.10.25 --profile haproxy
@@ -68,7 +68,7 @@ incus start lb
 incus exec lb -- cloud-init status --wait
 
 # Include config file for haproxy
-incus file push /home/dario/Desktop/kubernetes-starter-pack/scripts/lab/haproxy.cfg lb/etc/haproxy/haproxy.cfg
+curl -sL $REPO/$PREFIX/haproxy.cfg | incus file push - lb/etc/haproxy/haproxy.cfg
 
 # Restart haproxy service
 incus exec lb -- systemctl restart haproxy

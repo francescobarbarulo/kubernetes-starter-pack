@@ -1,15 +1,16 @@
 # Lab 0
 
-The lab is composed by a dedicated VM, from now on called `student` machine (`student@lab`), on top of which you can find six different isolated environments provided by means of Linux Containers (LXC). Nevertheless you can think of them as physical or virtual machines:
+The lab is composed by a dedicated VM, from now on called `student` machine (`student@lab`), on top of which you can find seven different isolated environments provided by means of Linux Containers (LXC). Nevertheless you can think of them as physical or virtual machines:
 
-| Environment | Shell            | Description                   | IP address     |
-| ----------- | ---------------- | ----------------------------- | -------------- |
-| `dev`       | `root@dev`       | Developer laptop              | `172.30.10.10` |
-| `registry`  | `root@registry`  | Private image registry host   | `172.30.10.11` |
-| `nfs`       | `root@nfs`       | NFS server                    | `172.30.10.12` |
-| `k8s-cp-01` | `root@k8s-cp-01` | Kubernetes control-plane node | `172.30.10.20` |
-| `k8s-w-01`  | `root@k8s-w-01`  | Kubernetes worker node        | `172.30.10.21` |
-| `k8s-w-02`  | `root@k8s-w-02`  | Kubernetes worker node        | `172.30.10.22` |
+| Environment | Shell            | Description                    | IP address     |
+| ----------- | ---------------- | ------------------------------ | -------------- |
+| `dev`       | `root@dev`       | Developer laptop               | `172.30.10.10` |
+| `registry`  | `root@registry`  | Private image registry host    | `172.30.10.11` |
+| `nfs`       | `root@nfs`       | NFS server                     | `172.30.10.12` |
+| `k8s-cp-01` | `root@k8s-cp-01` | Kubernetes control-plane node  | `172.30.10.20` |
+| `k8s-w-01`  | `root@k8s-w-01`  | Kubernetes worker node         | `172.30.10.21` |
+| `k8s-w-02`  | `root@k8s-w-02`  | Kubernetes worker node         | `172.30.10.22` |
+| `lb`        | `root@lb`        | Load balancer for worker nodes | `172.30.10.25` |
 
 ![Lab](./img/lab0/lab.svg "Lab environment")
 

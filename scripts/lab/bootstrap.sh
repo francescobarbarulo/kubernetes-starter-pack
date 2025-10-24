@@ -34,7 +34,7 @@ incus start default
 # Wait for init
 incus exec default -- cloud-init status --wait
 # Disable cloud-init
-incus exec default -- touch /etc/cloud/cloud-init.disabled
+#incus exec default -- touch /etc/cloud/cloud-init.disabled
 incus stop default
 
 # Create base image
@@ -56,3 +56,20 @@ do
   incus init local:base $name -d eth0,ipv4.address=$ipv4_addr --profile k8s
   incus start $name
 done
+
+# Create haproxy profile
+incus profile list | grep -qo haproxy || incus profile create haproxy 
+curl -sL $REPO/$PREFIX/incus-haproxy-profile | incus profile edit haproxy
+
+# Create Load Balancer instance
+incus init local:base lb -d eth0,ipv4.address=172.30.10.25 --profile haproxy
+incus start lb
+# Wait for init
+incus exec lb -- cloud-init status --wait
+
+# Include config file for haproxy
+curl -sL $REPO/$PREFIX/haproxy.cfg | incus file push - lb/etc/haproxy/haproxy.cfg
+
+# Restart haproxy service
+incus exec lb -- systemctl restart haproxy
+

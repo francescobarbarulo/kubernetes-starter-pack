@@ -231,10 +231,15 @@ There are several open-source Ingress Controller implementations. You are going 
 
    By default, this Service is of type `LoadBalancer` and the assignment of an external IP is in the `pending` status. Howerver a Service of type `LoadBalancer` includes all the functionalities of the `NodePort` one. In fact, the service is already exposed on port `30958` and `31600` of the host.
 
-4. Update the Service `type` field to `NodePort`.
+4. Update the Service `type` field to `NodePort` and the exposed port number for both http and https traffic to align with the load balancer (the `lb` environment) configuration. Change the `externalTrafficPolicy` to `Cluster` to allow traffic to be forwarded to the ingrss controller  even if it is running on a node that does not receive the request.
 
    ```sh
-   kubectl patch service ingress-nginx-controller -n ingress-nginx -p '{"spec": {"type": "NodePort"}}'
+   kubectl patch service ingress-nginx-controller -n ingress-nginx --type='json' -p='[
+  {"op": "replace", "path": "/spec/externalTrafficPolicy", "value": "Cluster"},
+  {"op": "replace", "path": "/spec/type", "value": "NodePort"}
+  {"op": "replace", "path": "/spec/ports/0/nodePort", "value": 30080},
+  {"op": "replace", "path": "/spec/ports/1/nodePort", "value": 30443}
+   ]'
    ```
 
 ## Ingress Fan Out

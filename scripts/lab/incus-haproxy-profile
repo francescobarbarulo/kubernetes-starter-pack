@@ -1,0 +1,19 @@
+config:
+  boot.autostart: "true"
+  boot.autostart.delay: 100
+  cloud-init.user-data: |
+    #cloud-config
+    package_upgrade: true
+    packages:
+    - haproxy
+description: haproxy profile
+devices:
+  eth0:
+    name: eth0
+    network: incusbr0
+    type: nic
+  root:
+    path: /
+    pool: default
+    type: disk
+name: haproxy

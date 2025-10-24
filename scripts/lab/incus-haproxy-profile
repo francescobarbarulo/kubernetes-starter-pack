@@ -1,0 +1,29 @@
+config:
+  boot.autostart: "true"
+  boot.autostart.delay: 100
+  cloud-init.user-data: |
+    #cloud-config
+    package_upgrade: true
+    packages:
+    - haproxy
+  raw.lxc: |-
+    lxc.apparmor.profile=unconfined
+    lxc.cap.drop=
+    lxc.cgroup.devices.allow=a
+    lxc.mount.auto=proc:rw sys:rw
+    lxc.mount.entry=/dev/kmsg dev/kmsg none defaults,bind,create=file
+description: haproxy profile
+devices:
+  eth0:
+    name: eth0
+    network: incusbr0
+    type: nic
+  kmsg:
+    path: /dev/kmsg
+    source: /dev/kmsg
+    type: unix-char
+  root:
+    path: /
+    pool: default
+    type: disk
+name: haproxy

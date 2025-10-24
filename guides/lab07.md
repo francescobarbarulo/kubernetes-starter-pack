@@ -206,9 +206,9 @@ A cluster administrator can define as many `StorageClass` objects as needed, eac
 4.  An administrator can mark a specific `StorageClass` as default by adding the `storageclass.kubernetes.io/is-default-class` annotation to it. When a default `StorageClass` exists in a cluster and a user creates a `PersistentVolumeClaim` with `storageClassName` unspecified, the `DefaultStorageClass` admission controller automatically adds the `storageClassName` field pointing to the default storage class.
     Mark the `nfs-csi` StorageClass as _default_.
 
-        ```sh
-        kubectl annotate storageclass nfs-csi storageclass.kubernetes.io/is-default-class=true
-        ```
+      ```sh
+      kubectl annotate storageclass nfs-csi storageclass.kubernetes.io/is-default-class=true
+      ```
 
 5.  Now if you show the `nfs-csi` Storage Class you should see the `(default)` annotation.
 

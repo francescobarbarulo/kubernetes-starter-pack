@@ -244,6 +244,14 @@ All these resources will be created in a new namespace.
    ```
 
    The wordpress is exposed through the Ingress Controller on the port of the ingress service. Get it by `kubectl get service -n ingress-nginx` and open the browser at `http://172.30.10.21:<nodePort>`.
+   This is the NodePort access method, primarily used for direct worker node access.
+   
+   Alternatively, you can use the External Load Balancer (the `lb` environment):
+
+   Since the external Load Balancer is configured to forward traffic to the worker NodePorts, the cleanest access method is via your Load Balancer's public IP on the standard HTTP port 80.
+
+   Confirm the WordPress app is reachable via the Load Balancer's IP address (the `lb` environment IP) using the standard URL: `http://172.30.10.25/`.
+
 
 ## Clean up
 

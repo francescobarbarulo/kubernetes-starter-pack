@@ -9,14 +9,14 @@ PREFIX=scripts/lab
 CONNTRACK_MAX_PER_CORE=32768
 CONNTRACK_MIN=131072
 
-modprobe ip_conntrack
-cat /etc/modules | grep nf_conntrack > /dev/null || echo nf_conntrack >> /etc/modules
-
 # kubeproxy expects to have set nf_conntrack_max to nproc*CONNTRACK_MAX_PER_CORE if greater then conntrack_min
 CONNTRACK_MAX=$(($(nproc)*$CONNTRACK_MAX_PER_CORE))
-if [[ $CONNTRACK_MAX -lt $CONNTRACK_MIN ]]; then
+if [ $CONNTRACK_MAX -lt $CONNTRACK_MIN ]; then
   CONNTRACK_MAX=$CONNTRACK_MIN
 fi
+
+modprobe nf_conntrack
+cat /etc/modules | grep nf_conntrack > /dev/null || echo nf_conntrack >> /etc/modules
 
 echo net.netfilter.nf_conntrack_max=$CONNTRACK_MAX > /etc/sysctl.d/99-ksp.conf
 sysctl -p /etc/sysctl.d/99-ksp.conf > /dev/null
